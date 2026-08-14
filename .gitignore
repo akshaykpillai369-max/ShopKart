@@ -1,0 +1,65 @@
+# ==========================================
+# 1. Environment Secrets & Configs
+# ==========================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# ==========================================
+# 2. Python / Django
+# ==========================================
+# Virtual Environment
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Byte-compiled / Optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# SQLite Database (Do not commit local DBs!)
+*.sqlite3
+*.db
+
+# Django Media Uploads (User-uploaded product images)
+media/
+
+# Static Files gathered by collectstatic
+staticfiles/
+
+# Logs
+*.log
+
+# ==========================================
+# 3. Node.js / React / Vite
+# ==========================================
+# Frontend Dependencies (Huge folder, easily recreated via npm install)
+node_modules/
+
+# Production Build Output
+dist/
+build/
+
+# Vite / Tool Caches
+.vite/
+.eslintcache
+
+# ==========================================
+# 4. OS & IDE Specific Files
+# ==========================================
+# Windows Explorer settings
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS Finder settings
+.DS_Store
+
+# VS Code settings (Optional: include if you don't want workspace settings tracked)
+.vscode/
+*.swp
+*.swo
