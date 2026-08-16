@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from 'axios'
 import { useParams } from "react-router-dom";
+import { useCart } from '../context/CartContext';
 
 export default function ProductDetail(){
+
+  const { addToCart } = useCart()
 
 
     const [product, setProduct] = useState()
@@ -22,9 +25,9 @@ export default function ProductDetail(){
         })
 
         .catch((err) => {
-        setError(err.response?.status === 404 ? "Product not found." : "Failed to load product.");
-        setLoading(false);
-        });
+        setError(err.response?.status === 404 ? "Product not found." : "Failed to load product.")
+        setLoading(false)
+        })
 
     }, [slug])
 
@@ -98,6 +101,7 @@ export default function ProductDetail(){
 
         <div className="flex flex-col sm:flex-row gap-4 mt-2">
           <button 
+          onClick={() => addToCart(product)}
           className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-3 px-6 rounded-lg transition-colors shadow-sm">
             Add to Cart
           </button>
