@@ -1,11 +1,11 @@
 // Line 1: Add useContext here!
 import { createContext, useContext, useState } from "react";
-//creator of portel
+//creator of portal
 const CartContext = createContext()
 
 export const useCart = () => useContext(CartContext)
 
-//transmitter of portel
+//transmitter of portal
 export default function CartProvider({children}){
 
     const [cart, setCart] = useState([])

@@ -1,21 +1,16 @@
-import { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
+import { useProduct } from "../context/productContext";
+import { useState } from 'react';
+
+
 
 export default function ProductList() {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/products/")
-      .then((response) => response.json())
-      .then((data) => {
-        setProducts(data)
-        setLoading(false)
-      })
-      .catch((err) => console.error("Error fetching products:", err))
-  }, [])
+  
+  const {products, loading} = useProduct()
+  
 
-  if (loading) {
+   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-50">
         <h2 className="text-xs font-medium text-gray-500 animate-pulse">
@@ -24,9 +19,9 @@ export default function ProductList() {
       </div>
     )
   }
-
+   
   return (
-    <div className="max-w-6xl mx-auto p-">
+    <div className="max-w-6xl mx-auto p-2">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
         {products.map((product) => (
 

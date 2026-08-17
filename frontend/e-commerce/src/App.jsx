@@ -3,11 +3,13 @@ import ProductList from "./components/ProductsList"
 import { Routes, Route } from 'react-router-dom'
 import Navbar from "./components/NavBar";
 import CartProvider from './context/CartContext';
+import { ProductProvider } from "./context/productContext";
 
 
 export default function App() {
   return (
     <CartProvider>
+      <ProductProvider>
       <div className="min-h-screen bg-gray-50 text-gray-900">
         <Navbar />
 
@@ -18,6 +20,7 @@ export default function App() {
           </Routes>
         </main>
       </div>
+      </ProductProvider>
     </CartProvider>
   )
 }

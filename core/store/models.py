@@ -12,7 +12,7 @@ class Product(models.Model):
     rating = models.DecimalField(max_digits = 2 , decimal_places = 1, validators=[MinValueValidator(1), MaxValueValidator(5)], default=5.0)
     image = models.ImageField(upload_to='images/')
     slug = models.SlugField(unique=True, blank=True)
-    stock = models.IntegerField(validators=[MinValueValidator(1)], default=10)
+    stock = models.IntegerField(validators=[MinValueValidator(0)], default=10)
     active = models.BooleanField(default=True)
 
     @property
