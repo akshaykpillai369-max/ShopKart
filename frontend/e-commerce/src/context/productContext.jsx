@@ -15,11 +15,11 @@ export function ProductProvider({ children }) {
     
 
     useEffect(() => {
-    axios.get("http://127.0.0.1:8000/api/products/")
+    axios.get("http://localhost:8000/api/products/")
       .then((response) => {
 
         setProducts(response.data)
-        setLoading(false)
+        // setLoading(false)
       })
       .catch((err) => console.error("Error fetching products:", err))  
     }, [])
@@ -30,7 +30,7 @@ export function ProductProvider({ children }) {
 
   const handleSearch = useCallback((searchterm) => {  
       const safeSearchTerm = encodeURIComponent(searchterm);
-      axios.get(`http://127.0.0.1:8000/api/products/?search=${safeSearchTerm}`)
+      axios.get(`http://localhost:8000/api/products/?search=${safeSearchTerm}`)
         .then((response) => setProducts(response.data))
         .catch((err) => console.error("Error fetching products:", err));
         

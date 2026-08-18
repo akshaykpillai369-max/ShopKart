@@ -1,68 +1,129 @@
 import re
-from django.db.models import Q   
-from rest_framework.viewsets import ReadOnlyModelViewSet
-from .models import Product
-from .serializers import ProductSerializer
 
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+from django.db.models import Q
+
+from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
-# Create your views here.
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .models import Product
+from .serializers import ProductSerializer, SignupSerializer
+
+
 class ProductViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.filter(active=True)
     serializer_class = ProductSerializer
-    lookup_field = 'slug'
+    lookup_field = "slug"
 
     def get_queryset(self):
         queryset = self.queryset
-        search_query = self.request.query_params.get('search', '').lower().strip()
+        search_query = self.request.query_params.get("search", "").lower().strip()
 
-        if search_query:
-            pattern = r'\b(under|below|less\s+than|over|above|more\s+than)\s+(\d+)\b'
-            match = re.search(pattern, search_query)
+        if not search_query:
+            return queryset
 
-            if match:
-                keyword = match.group(1)
-                price = int(match.group(2))
-                
-                raw_product_name = re.sub(pattern, '', search_query)
-                product_name = re.sub(r'\b(\w+)s\b', r'\1', raw_product_name)
-                product_name = re.sub(r'[\$₹€,]', '', product_name)
-                product_name = re.sub(r'\s+', ' ', product_name).strip()
+        pattern = r"\b(under|below|less\s+than|over|above|more\s+than)\s+(\d+)\b"
+        match = re.search(pattern, search_query)
 
-               
-                if product_name:
-                    queryset = queryset.filter(
-                        Q(name__icontains=product_name) | Q(description__icontains=product_name)
-                    )
+        if match:
+            keyword = match.group(1)
+            price = int(match.group(2))
 
-               
-                if keyword in ['under', 'below', 'less than']:
-                    queryset = queryset.filter(discounted_price__lte=price)
-                elif keyword in ['over', 'above', 'more than']:
-                    queryset = queryset.filter(discounted_price__gte=price)
+            raw_product_name = re.sub(pattern, "", search_query)
+            product_name = re.sub(r"\b(\w+)s\b", r"\1", raw_product_name)
+            product_name = re.sub(r"[\$₹€,]", "", product_name)
+            product_name = re.sub(r"\s+", " ", product_name).strip()
 
-            else:
-               
-                clean_query = re.sub(r'\b(\w+)s\b', r'\1', search_query).strip()
-                if clean_query:
-                    queryset = queryset.filter(
-                        Q(name__icontains=clean_query) | Q(description__icontains=clean_query)
-                    )
+            if product_name:
+                queryset = queryset.filter(
+                    Q(name__icontains=product_name)
+                    | Q(description__icontains=product_name)
+                )
+
+            if keyword in ["under", "below", "less than"]:
+                queryset = queryset.filter(discounted_price__lte=price)
+
+            elif keyword in ["over", "above", "more than"]:
+                queryset = queryset.filter(discounted_price__gte=price)
+
+        else:
+            clean_query = re.sub(r"\b(\w+)s\b", r"\1", search_query).strip()
+
+            if clean_query:
+                queryset = queryset.filter(
+                    Q(name__icontains=clean_query)
+                    | Q(description__icontains=clean_query)
+                )
 
         return queryset
-    
+
+
+class SignUpView(APIView):
+
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(
+                {"message": "Account created successfully"},
+                status=status.HTTP_201_CREATED,
+            )
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class CookieTokenObtainPairView(TokenObtainPairView):
+
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_200_OK:
+            refresh = response.data.pop("refresh")
+
+            response.set_cookie(
+                key="refresh_token",
+                value=refresh,
+                secure=not settings.DEBUG,
+                httponly=True,
+                samesite="Lax",
+            )
+
+        return response
+
+
+class CookieTokenRefreshSerializer(TokenRefreshSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["refresh"].required = False
+
+    def validate(self, attrs):
+        attrs["refresh"] = self.context["request"].COOKIES.get("refresh_token")
+
+        return super().validate(attrs)
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    serializer_class = CookieTokenRefreshSerializer
+
 
 class AuthTestView(APIView):
-
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        return Response(
-            {
-                "message" : "you are authenticated",
-                "username" : request.user.username
-            }
-        )
+        return Response({
+            "message": "You are authenticated!",
+            "user": request.user.email
+        })

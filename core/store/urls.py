@@ -1,8 +1,7 @@
 from django.urls import path, include
-from .views import *
+from .views import ProductViewSet, SignUpView, CookieTokenObtainPairView,CookieTokenRefreshView, AuthTestView
 from rest_framework.routers import DefaultRouter
 
-from .views import AuthTestView
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
@@ -10,6 +9,8 @@ router.register(r'products', ProductViewSet, basename='product')
 urlpatterns = [
 
      path('', include(router.urls)),
+     path("auth/signup/", SignUpView.as_view(), name = 'signup'),
+     path('token/', CookieTokenObtainPairView.as_view(), name='token_obtain_pair'),
+     path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
      path("auth/test/", AuthTestView.as_view()),
-
 ]
