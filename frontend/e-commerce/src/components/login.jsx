@@ -7,7 +7,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
 
   const location = useLocation();
-  const { login } = useLogin();
+  const { login, logout } = useLogin();
   const navigate = useNavigate()
 
   const handleSubmit = (e) => {

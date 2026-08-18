@@ -10,7 +10,7 @@ export default function Navbar() {
   const { cart } = useCart();
   const { handleSearch } = useProduct();
   const { theme, toggleTheme } = useTheme();
-  const { user } = useLogin();
+  const { user, logout } = useLogin();
 
   return (
     <nav
@@ -83,11 +83,20 @@ export default function Navbar() {
         <div className="flex items-center gap-3 shrink-0">
 
           {/* Login */}
-
-          {user ? (
-    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
-         {user}
-    </span>
+{user ? (
+    <button
+        onClick={logout}
+        className="
+            px-4 py-2
+            rounded-lg
+            text-sm font-medium
+            text-gray-700 dark:text-gray-200
+            hover:bg-gray-100 dark:hover:bg-gray-800
+            transition
+        "
+    >
+        👋 {user} · Logout
+    </button>
 ) : (
     <Link
         to="/login"

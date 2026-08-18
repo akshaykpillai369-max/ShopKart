@@ -27,15 +27,14 @@ export default function AuthProvider({children}){
 
 }, [])
 
-    const login = (email, password) => {
+const login = (email, password) => {
 
-        const data = {
+    const data = {
+        username: email,
+        password: password
+    }
 
-            username : email,
-            password : password
-        }
-
-        return axios.post(
+    return axios.post(
         'http://localhost:8000/api/token/',
         data,
         {
@@ -43,19 +42,26 @@ export default function AuthProvider({children}){
         }
     )
     .then((response) => {
-    setAccess(response.data.access)
+        setAccess(response.data.access)
 
-    const username = email.split("@")[0]
-    setUser(username)
-    localStorage.setItem("shopkart_user", username)
-})
-    
+        const username = email.split("@")[0]
+        setUser(username)
 
-    }
+        localStorage.setItem("shopkart_user", username)
+    })
+}
 
+
+// Logout
+const logout = () => {
+    setAccess()
+    setUser()
+
+    localStorage.removeItem("shopkart_user")
+}
     
     return(
-        <AuthContext value={{access, login, user}}>
+        <AuthContext value={{access, login, user, logout}}>
             {children}
         </AuthContext>
     )
