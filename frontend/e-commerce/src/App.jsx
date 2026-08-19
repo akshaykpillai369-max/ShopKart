@@ -8,6 +8,8 @@ import StoreLayout from "./layouts/StoreLayouts";
 import ThemeProvider from "./context/ThemeContext";
 import LoginForm from "./components/login";
 import Cart from "./components/Cart";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Account from "./pages/Account";
 
 export default function App() {
   return (
@@ -35,6 +37,14 @@ export default function App() {
               <Route path="/signup" element={<SignUpForm />} />
               <Route path="/login" element={<LoginForm/>} />
               <Route path="/cart" element= {<Cart/> } />
+
+              <Route path="/account" element={
+                <ProtectedRoute>
+                    <Account />
+                </ProtectedRoute>
+    }
+/>
+ 
 
             </Routes>
 

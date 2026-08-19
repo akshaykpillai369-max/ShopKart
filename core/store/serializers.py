@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product
+from .models import Product, Profile
 from django.contrib.auth.models import User
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -56,3 +56,13 @@ class SignupSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(source="user.email", read_only=True)
+
+    class Meta:
+
+        model = Profile
+        fields = ['id', 'user', 'name', 'mobile_number', 'email', 'address']
+        read_only_fields = ['user', 'email']

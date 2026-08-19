@@ -12,8 +12,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .models import Product
-from .serializers import ProductSerializer, SignupSerializer
+from .models import Product, Profile
+from .serializers import ProductSerializer, SignupSerializer, ProfileSerializer
 
 
 class ProductViewSet(ReadOnlyModelViewSet):
@@ -127,3 +127,22 @@ class AuthTestView(APIView):
             "message": "You are authenticated!",
             "user": request.user.email
         })
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        details = Profile.objects.get(user = request.user)
+        serializer = ProfileSerializer(details)
+        return Response(serializer.data)
+
+    def put(self, request):
+
+        details = Profile.objects.get(user = request.user)
+        serializer = ProfileSerializer(details, data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+       

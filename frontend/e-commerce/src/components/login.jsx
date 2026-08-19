@@ -1,5 +1,5 @@
  import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLogin } from "../context/AuthContext";
 
 export default function LoginForm() {
@@ -250,13 +250,14 @@ export default function LoginForm() {
             <p className="mt-7 text-center text-sm text-gray-400">
 
               Don't have an account?{" "}
+    
 
-              <a
-                href="#"
+              <Link to="/signup"
+                
                 className="font-medium text-blue-400 hover:text-blue-300 hover:underline"
               >
                 Create an account
-              </a>
+              </Link>
 
             </p>
 

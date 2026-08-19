@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios"
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 
 
@@ -254,12 +255,15 @@ export default function SignUpForm() {
              
             <p className="mt-7 text-center text-sm text-gray-400">
               Already have an account?{" "}
-              <a
-                href="#"
+
+              <Link to="/login"
+                
                 className="font-medium text-blue-400 hover:text-blue-300 hover:underline"
               >
-                Log in
-              </a>
+                Login
+              </Link>
+
+              
             </p>
 
           </div>

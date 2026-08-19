@@ -1,6 +1,9 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.text import slugify
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 # Create your models here.
 class Product(models.Model):
@@ -40,3 +43,13 @@ class Product(models.Model):
     def __str__(self):
         return self.slug
 
+
+class Profile(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    mobile_number = models.CharField(max_length=15)
+    address = models.TextField()
+
+    def __str__(self):
+        return self.name
