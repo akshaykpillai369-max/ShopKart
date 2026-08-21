@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import ProductViewSet, SignUpView, CookieTokenObtainPairView,CookieTokenRefreshView, AuthTestView, ProfileView
+from .views import ProductViewSet, SignUpView, CookieTokenObtainPairView,CookieTokenRefreshView, AuthTestView, ProfileView, GoogleLoginView
 from rest_framework.routers import DefaultRouter
  
 
@@ -15,4 +15,5 @@ urlpatterns = [
      path('token/refresh/', CookieTokenRefreshView.as_view(), name='token_refresh'),
      path("auth/test/", AuthTestView.as_view()),
      path('profile/',ProfileView.as_view(), name='profile'),
+     path('auth/google/', GoogleLoginView.as_view(), name='google_auth')
 ]

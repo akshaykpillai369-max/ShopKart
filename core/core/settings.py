@@ -142,3 +142,5 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+GOOGLE_CLIENT_ID = "928871780561-pkdkdoqf94ccgc3tju16i01d3sqptec7.apps.googleusercontent.com"

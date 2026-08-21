@@ -51,6 +51,27 @@ const login = (email, password) => {
     })
 }
 
+//google_login
+const googleLogin = (credential) => {
+    return axios.post(
+        "http://localhost:8000/api/auth/google/",
+        {
+            credential: credential
+        },
+    {
+        withCredentials: true
+    }
+    )
+    .then((response)=> {
+
+        setAccess(response.data.access)
+        const username = response.data.email.split("@")[0]
+        setUser(username)
+
+        localStorage.setItem("shopkart_user", username)
+    })
+}
+
 
 // Logout
 const logout = () => {
@@ -61,7 +82,7 @@ const logout = () => {
 }
     
     return(
-        <AuthContext value={{access, login, user, logout}}>
+        <AuthContext value={{access, login, user, logout, googleLogin}}>
             {children}
         </AuthContext>
     )

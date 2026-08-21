@@ -11,10 +11,14 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Product, Profile
 from .serializers import ProductSerializer, SignupSerializer, ProfileSerializer
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class ProductViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.filter(active=True)
@@ -145,4 +149,49 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-       
+
+class GoogleLoginView(APIView):
+
+    def post(self, request):
+        try:
+            credential = request.data.get("credential")
+            result = id_token.verify_oauth2_token(
+            credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID)
+            email = result['email']
+            name = result['name']
+            if User.objects.filter(email=email).exists():
+                user = User.objects.get(email=email)
+            else:
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                )
+
+            refresh = RefreshToken.for_user(user)
+            access = refresh.access_token
+            response = Response({
+                "access": str(access),
+                "email": email,
+            })
+
+            response.set_cookie(
+                            key="refresh_token",
+                            value=str(refresh),
+                            secure=not settings.DEBUG,
+                            httponly=True,
+                            samesite="Lax",
+                        )
+            
+            return response
+        except ValueError:
+            return Response(
+                {"error": "Invalid Google credential"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+
+                            
+    
