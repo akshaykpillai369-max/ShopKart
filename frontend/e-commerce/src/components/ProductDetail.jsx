@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate} from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useLogin } from "../context/AuthContext"
+
 
 export default function ProductDetail() {
 
   const { cart, addToCart } = useCart();
+  const { access } = useLogin()
+  const navigate = useNavigate()
 
   const [product, setProduct] = useState();
   const [loading, setLoading] = useState(true);
@@ -200,8 +204,16 @@ export default function ProductDetail() {
             ) : (
 
               <button
-                onClick={() => addToCart(product)}
-                className="
+                onClick={() => {
+
+                if (!access) {
+                    navigate("/login")
+                    return
+                }
+
+                addToCart(product)
+                }}
+                  className="
                   flex-1
                   bg-yellow-400
                   hover:bg-yellow-500

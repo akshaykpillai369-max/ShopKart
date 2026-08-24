@@ -53,3 +53,22 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Cart(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+class CartItem(models.Model):
+
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product= models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)], default=1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["cart", "product"],
+                name="unique_cart_product"
+            )
+        ]

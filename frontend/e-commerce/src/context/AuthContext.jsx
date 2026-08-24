@@ -1,90 +1,105 @@
-import { useState, createContext, useContext, useEffect} from "react";
+import { useState, createContext, useContext, useEffect } from "react";
 import axios from "axios";
-const AuthContext = createContext()
 
-export const useLogin = () => useContext(AuthContext)
+const AuthContext = createContext();
 
-export default function AuthProvider({children}){
+export const useLogin = () => useContext(AuthContext);
 
-    const [access, setAccess] = useState()
+export default function AuthProvider({ children }) {
+    const [access, setAccess] = useState(null);
+
     const [user, setUser] = useState(() => {
-    return localStorage.getItem("shopkart_user")
-})
+        return localStorage.getItem("shopkart_user");
+    });
 
-    useEffect(() => {
-
-        axios.post(
-    'http://localhost:8000/api/token/refresh/',
-    null,
-    {
-        withCredentials: true
-    }
-)
-
-.then((response) => {
-    setAccess(response.data.access)
-})
-
-}, [])
-
-const login = (email, password) => {
-
-    const data = {
-        username: email,
-        password: password
+useEffect(() => {
+    if (!user) {
+        setAccess(null);
+        return;
     }
 
-    return axios.post(
-        'http://localhost:8000/api/token/',
-        data,
-        {
-            withCredentials: true
-        }
-    )
-    .then((response) => {
-        setAccess(response.data.access)
+    axios
+        .post(
+            "http://localhost:8000/api/token/refresh/",
+            null,
+            {
+                withCredentials: true
+            }
+        )
+        .then((response) => {
+            setAccess(response.data.access);
+        })
+        .catch(() => {
+            setAccess(null);
+        });
+}, []);
 
-        const username = email.split("@")[0]
-        setUser(username)
+    const login = (email, password) => {
+        const data = {
+            username: email,
+            password: password,
+        };
 
-        localStorage.setItem("shopkart_user", username)
-    })
-}
+        return axios
+            .post(
+                "http://localhost:8000/api/token/",
+                data,
+                {
+                    withCredentials: true,
+                }
+            )
+            .then((response) => {
+                setAccess(response.data.access);
 
-//google_login
-const googleLogin = (credential) => {
-    return axios.post(
-        "http://localhost:8000/api/auth/google/",
-        {
-            credential: credential
-        },
-    {
-        withCredentials: true
-    }
-    )
-    .then((response)=> {
+                const username = email.split("@")[0];
 
-        setAccess(response.data.access)
-        const username = response.data.email.split("@")[0]
-        setUser(username)
+                setUser(username);
+                localStorage.setItem("shopkart_user", username);
+            });
+    };
 
-        localStorage.setItem("shopkart_user", username)
-    })
-}
+    // Google login
+    const googleLogin = (credential) => {
+        return axios
+            .post(
+                "http://localhost:8000/api/auth/google/",
+                {
+                    credential: credential,
+                },
+                {
+                    withCredentials: true,
+                }
+            )
+            .then((response) => {
+                setAccess(response.data.access);
 
+                const username = response.data.email.split("@")[0];
 
-// Logout
-const logout = () => {
-    setAccess()
-    setUser()
+                setUser(username);
+                localStorage.setItem("shopkart_user", username);
+            });
+    };
 
-    localStorage.removeItem("shopkart_user")
-}
-    
-    return(
-        <AuthContext value={{access, login, user, logout, googleLogin}}>
+    // Logout
+    const logout = () => {
+        return axios
+            .post(
+                "http://localhost:8000/api/logout/",
+                null,
+                {
+                    withCredentials: true,
+                }
+            )
+            .finally(() => {
+                setAccess(null);
+                setUser(null);
+                localStorage.removeItem("shopkart_user");
+            });
+    };
+
+    return (
+        <AuthContext value={{ access, login, user, logout, googleLogin }}>
             {children}
         </AuthContext>
-    )
-
+    );
 }

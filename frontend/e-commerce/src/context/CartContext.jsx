@@ -1,147 +1,254 @@
-// Line 1: Add useContext here!
 import { createContext, useContext, useState, useEffect } from "react";
-//creator of portal
-const CartContext = createContext()
+import { useLogin } from "./AuthContext";
 
-export const useCart = () => useContext(CartContext)
+const CartContext = createContext();
 
-//transmitter of portal
-export default function CartProvider({children}){
+export const useCart = () => useContext(CartContext);
 
-    const [cart, setCart] = useState(() => {
+export default function CartProvider({ children }) {
+    const { access } = useLogin();
 
-    const savedCart = localStorage.getItem("cart");
+    const [cart, setCart] = useState([]);
 
-    if (savedCart) {
-        return JSON.parse(savedCart);
-    }
-
-    return [];
-
-})
-    
-
+    // Get cart from backend
     useEffect(() => {
-        const currentCart = JSON.stringify(cart)
+        if (!access) {
+            setCart([]);
+            return;
+        }
 
-        localStorage.setItem("cart", currentCart)
-
-    }, [cart])
-    
-
-    const addToCart = (product) => {
-
-        setCart((currentCart) => {
-
-            const exists = currentCart.some(
-                item => item.id === product.id
-            )
-
-            if (exists) {
-
-                return currentCart.map((item) => {
-
-                    if (item.id === product.id) {
-                        return {
-                            ...item,
-                            quantity: item.quantity + 1
-                        }
+        const fetchCart = async () => {
+            try {
+                const response = await fetch(
+                    "http://localhost:8000/api/cart/",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${access}`,
+                        },
+                        credentials: "include",
                     }
+                );
 
-                    return item
-                })
+                if (!response.ok) {
+                    throw new Error("Failed to fetch cart");
+                }
 
+                const data = await response.json();
+
+                const formattedCart = data.map((item) => ({
+                    id: item.product.id,
+                    cartItemId: item.id,
+                    name: item.product.name,
+                    discounted_price: item.product.discounted_price,
+                    image: item.product.image,
+                    slug: item.product.slug,
+                    quantity: item.quantity,
+                }));
+
+                setCart(formattedCart);
+            } catch (error) {
+                console.error("Error fetching cart:", error);
+            }
+        };
+
+        fetchCart();
+    }, [access]);
+
+    const addToCart = async (product) => {
+        try {
+            const response = await fetch(
+                "http://localhost:8000/api/add-to-cart/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${access}`,
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        product_id: product.id,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data.message);
+                return;
             }
 
-            else {
+            setCart((currentCart) => {
+                const exists = currentCart.some(
+                    (item) => item.id === product.id
+                );
+
+                if (exists) {
+                    return currentCart.map((item) => {
+                        if (item.id === product.id) {
+                            return {
+                                ...item,
+                                cartItemId: data.cart_item_id,
+                                quantity: data.quantity,
+                            };
+                        }
+
+                        return item;
+                    });
+                }
 
                 return [
                     ...currentCart,
                     {
                         ...product,
-                        quantity: 1
-                    }
-                ]
+                        quantity: data.quantity,
+                        cartItemId: data.cart_item_id,
+                    },
+                ];
+            });
+        } catch (error) {
+            console.error("Error adding product to cart:", error);
+        }
+    };
 
-            }
+    const increaseQuantity = async (id) => {
+        const item = cart.find((item) => item.id === id);
 
-        })
+        if (!item) return;
 
-}
-
-const increaseQuantity = (id) => {
-
-    setCart((currentCart) => {
-
-        return currentCart.map((item) => {
-
-            if (item.id === id) {
-
-                return {
-                    ...item,
-                    quantity: item.quantity + 1
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${access}`,
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        quantity: item.quantity + 1,
+                    }),
                 }
+            );
 
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data.message);
+                return;
             }
 
-            return item
+            setCart((currentCart) =>
+                currentCart.map((item) => {
+                    if (item.id === id) {
+                        return {
+                            ...item,
+                            quantity: data.quantity,
+                        };
+                    }
 
-        })
+                    return item;
+                })
+            );
+        } catch (error) {
+            console.error("Error increasing quantity:", error);
+        }
+    };
 
-    })
+    const decreaseQuantity = async (id) => {
+        const item = cart.find((item) => item.id === id);
 
-}
-
-const decreaseQuantity = (id) => {
-
-    setCart((currentCart) => {
-
-        const item = currentCart.find(item => item.id === id)
+        if (!item) return;
 
         if (item.quantity === 1) {
-
-            return currentCart.filter(item => item.id !== id)
-
+            await removeFromCart(id);
+            return;
         }
 
-        return currentCart.map((item) => {
-
-            if (item.id === id) {
-
-                return {
-                    ...item,
-                    quantity: item.quantity - 1
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${access}`,
+                    },
+                    credentials: "include",
+                    body: JSON.stringify({
+                        quantity: item.quantity - 1,
+                    }),
                 }
+            );
 
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error(data.message);
+                return;
             }
 
-            return item
+            setCart((currentCart) =>
+                currentCart.map((item) => {
+                    if (item.id === id) {
+                        return {
+                            ...item,
+                            quantity: data.quantity,
+                        };
+                    }
 
-        })
+                    return item;
+                })
+            );
+        } catch (error) {
+            console.error("Error decreasing quantity:", error);
+        }
+    };
 
-    })
+    const removeFromCart = async (id) => {
+        const item = cart.find((item) => item.id === id);
 
-}
+        if (!item) return;
 
-const removeFromCart = (id) => {
+        try {
+            const response = await fetch(
+                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${access}`,
+                    },
+                    credentials: "include",
+                }
+            );
 
-    setCart((currentCart) => {
+            const data = await response.json();
 
-            return currentCart.filter(item => item.id !== id)
+            if (!response.ok) {
+                console.error(data.message);
+                return;
+            }
 
-        })
+            setCart((currentCart) =>
+                currentCart.filter((item) => item.id !== id)
+            );
+        } catch (error) {
+            console.error("Error removing cart item:", error);
+        }
+    };
 
-}
-
-
-    return(
-        <CartContext value={{cart, addToCart, increaseQuantity, decreaseQuantity, removeFromCart}}>
+    return (
+        <CartContext
+            value={{
+                cart,
+                addToCart,
+                increaseQuantity,
+                decreaseQuantity,
+                removeFromCart,
+            }}
+        >
             {children}
         </CartContext>
-    )
-
-   
-
+    );
 }
-
-
