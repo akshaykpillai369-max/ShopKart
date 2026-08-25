@@ -248,22 +248,24 @@ export default function Cart() {
 
                             </div>
 
-
-                            <button
-                                className="
-                                    w-full
-                                    mt-3
-                                    py-3
-                                    rounded-lg
-                                    bg-black dark:bg-white
-                                    text-white dark:text-black
-                                    text-sm font-medium
-                                    hover:opacity-80
-                                    transition
-                                "
-                            >
-                                Proceed to Checkout
-                            </button>
+                            <Link
+                                    to="/checkout"
+                                    className="
+                                        w-full
+                                        mt-3
+                                        py-3
+                                        rounded-lg
+                                        bg-black dark:bg-white
+                                        text-white dark:text-black
+                                        text-sm font-medium
+                                        hover:opacity-80
+                                        transition
+                                        block
+                                        text-center
+                                    "
+                                >
+                                    Proceed to Checkout
+                             </Link>
 
 
                             <Link

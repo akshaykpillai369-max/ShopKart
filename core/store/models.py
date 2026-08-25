@@ -72,3 +72,17 @@ class CartItem(models.Model):
                 name="unique_cart_product"
             )
         ]
+
+class Order(models.Model):
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="orders")
+    address = models.TextField()
+    total_cost = models.IntegerField()
+    status = models.CharField(max_length=20,default="Pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="items")
+    product = models.ForeignKey(Product,on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    price = models.IntegerField()

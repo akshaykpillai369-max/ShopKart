@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import ProductViewSet, SignUpView, CookieTokenObtainPairView
 from .views import CookieTokenRefreshView, AuthTestView, ProfileView, GoogleLoginView
-from .views import AddToCartView, CartView, CartItemView, LogoutView
+from .views import AddToCartView, CartView, CartItemView, LogoutView, OrderView
 from rest_framework.routers import DefaultRouter
  
 
@@ -22,4 +22,5 @@ urlpatterns = [
      path('cart/', CartView.as_view(), name='cart'),
      path('cart-item/<int:cart_item_id>/',CartItemView.as_view(),name='cart-item'),
      path("logout/", LogoutView.as_view(), name="logout"),
+     path('orders/', OrderView.as_view(), name='orders'),
 ]

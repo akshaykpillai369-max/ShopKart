@@ -238,6 +238,10 @@ export default function CartProvider({ children }) {
         }
     };
 
+    const clearCart = () => {
+    setCart([])
+    }
+
     return (
         <CartContext
             value={{
@@ -246,6 +250,7 @@ export default function CartProvider({ children }) {
                 increaseQuantity,
                 decreaseQuantity,
                 removeFromCart,
+                clearCart
             }}
         >
             {children}

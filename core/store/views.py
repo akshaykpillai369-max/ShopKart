@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -18,13 +19,14 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from .models import Cart, CartItem, Product, Profile
+from .models import Cart, CartItem, Product, Profile, OrderItem, Order
 
 from .serializers import (
     CartItemSerializer,
     ProductSerializer,
     ProfileSerializer,
     SignupSerializer,
+    OrderSerializer
 )
 
 User = get_user_model()
@@ -151,6 +153,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
             response.set_cookie(
             key="refresh_token",
             value=refresh,
+            max_age=7 * 24 * 60 * 60,
             secure=not settings.DEBUG,
             httponly=True,
             samesite="Lax",
@@ -257,6 +260,7 @@ class GoogleLoginView(APIView):
             response.set_cookie(
             key="refresh_token",
             value=str(refresh),
+            max_age=7 * 24 * 60 * 60,
             secure=not settings.DEBUG,
             httponly=True,
             samesite="Lax",
@@ -387,3 +391,61 @@ class CartItemView(APIView):
         return Response({
             "message": "Cart item removed successfully."
         })
+
+class OrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            cart = Cart.objects.get(user=request.user)
+        except Cart.DoesNotExist:
+            return Response(
+                {"message": "Cart is empty."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        cart_items = CartItem.objects.filter(cart=cart)
+
+        if not cart_items.exists():
+            return Response(
+                {"message": "Cart is empty."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        for item in cart_items:
+            if not item.product.active or item.product.stock < item.quantity:
+                return Response(
+                    {
+                        "message": f"Not enough stock available for {item.product.name}."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        total_cost = 0
+
+        for item in cart_items:
+            total_cost += item.product.discounted_price * item.quantity
+
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=request.user,
+                address=request.data.get("address"),
+                total_cost=total_cost
+            )
+
+            for item in cart_items:
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    price=item.product.discounted_price
+                )
+
+            cart_items.delete()
+
+        serializer = OrderSerializer(order)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
