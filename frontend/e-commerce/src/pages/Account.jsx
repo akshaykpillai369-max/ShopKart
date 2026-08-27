@@ -9,10 +9,11 @@ export default function Account() {
     const [address, setAddress] = useState("")
     const [isSaved, setIsSaved] = useState()
 
-    const { access } = useLogin()
+const { access } = useLogin()
 
-    const fetchProfile = () => {
-        axios.get("http://127.0.0.1:8000/api/profile/", {
+const fetchProfile = () => {
+    axios
+        .get("http://127.0.0.1:8000/api/profile/", {
             headers: {
                 Authorization: "Bearer " + access
             }
@@ -22,17 +23,20 @@ export default function Account() {
             setName(response.data.name)
             setMobileNumber(response.data.mobile_number)
             setAddress(response.data.address)
-        });
-    };
+        })
+        .catch((error) => {
+            console.log("Profile fetch failed:", error)
+        })
+}
 
-    useEffect(() => {
-        if (access) {
-            
-            fetchProfile()
-        }
-        
-    }, [access]);
+useEffect(() => {
+    if (!access) {
+        return
+    }
 
+    fetchProfile()
+}, [access])
+ 
     const handleSubmit = () => {
 
         const data = {

@@ -12,6 +12,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Account from "./pages/Account";
 import Checkout from "./pages/Checkout"
 import OrderSuccess from "./pages/OrderSuccess"
+import MyOrders from "./pages/MyOrders"
+import ResetPassword from "./components/ResetPassword"
+import ForgotPassword from "./components/ForgotPassword"
+import VerifyEmail from "./components/VerifyEmail"
 
 export default function App() {
   return (
@@ -41,7 +45,11 @@ export default function App() {
               <Route path="/cart" element= {<Cart/> } />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
-
+              <Route path="/orders" element={<MyOrders />} />
+              <Route path="/reset-password/:uid/:token" element={<ResetPassword />}/>
+              <Route path="/forgot-password" element={<ForgotPassword />}/>
+              <Route path="/verify-email/:uid/:token" element={<VerifyEmail />}/>
+              
               <Route path="/account" element={
                 <ProtectedRoute>
                     <Account />

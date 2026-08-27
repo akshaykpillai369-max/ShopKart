@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.throttling import AnonRateThrottle
 
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -20,6 +21,13 @@ from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
 from .models import Cart, CartItem, Product, Profile, OrderItem, Order
+
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.password_validation import validate_password
+import base64
 
 from .serializers import (
     CartItemSerializer,
@@ -114,14 +122,57 @@ class ProductViewSet(ReadOnlyModelViewSet):
 
 
 class SignUpView(APIView):
+
     def post(self, request):
+
         serializer = SignupSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+
+            user = serializer.save()
+
+            profile = Profile.objects.get(user=user)
+
+            profile.email_verified = False
+            profile.save()
+
+            uid = urlsafe_base64_encode(
+                force_bytes(user.pk)
+            )
+
+            token = default_token_generator.make_token(user)
+
+            verification_link = (
+                f"http://localhost:5173/verify-email/"
+                f"{uid}/{token}"
+            )
+
+            send_mail(
+                subject="Verify your ShopKart email",
+
+                message=f"""
+Hello,
+
+Welcome to ShopKart!
+
+Please verify your email address by clicking the link below:
+
+{verification_link}
+
+If you did not create this account, you can ignore this email.
+""",
+
+                from_email=None,
+                recipient_list=[user.email],
+            )
 
             return Response(
-                {"message": "Account created successfully"},
+                {
+                    "message": (
+                        "Account created successfully. "
+                        "Please check your email to verify your account."
+                    )
+                },
                 status=status.HTTP_201_CREATED,
             )
 
@@ -129,7 +180,6 @@ class SignUpView(APIView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
-
 
 class LogoutView(APIView):
     def post(self, request):
@@ -144,21 +194,47 @@ class LogoutView(APIView):
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
+
     def post(self, request, *args, **kwargs):
+
+        email = request.data.get("username")
+
+        try:
+            user = User.objects.get(username=email)
+            profile = Profile.objects.get(user=user)
+
+        except (User.DoesNotExist, Profile.DoesNotExist):
+            return Response(
+                {"error": "Invalid email or password."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Check email verification BEFORE generating tokens
+        if not profile.email_verified:
+
+            return Response(
+                {
+                    "error": "Please verify your email before logging in."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Email is verified, so now let SimpleJWT authenticate
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
+
             refresh = response.data.pop("refresh")
 
             response.set_cookie(
-            key="refresh_token",
-            value=refresh,
-            max_age=7 * 24 * 60 * 60,
-            secure=not settings.DEBUG,
-            httponly=True,
-            samesite="Lax",
-            path="/",
-        )
+                key="refresh_token",
+                value=refresh,
+                max_age=7 * 24 * 60 * 60,
+                secure=not settings.DEBUG,
+                httponly=True,
+                samesite="Lax",
+                path="/",
+            )
 
         return response
 
@@ -449,3 +525,227 @@ class OrderView(APIView):
             serializer.data,
             status=status.HTTP_201_CREATED
         )
+
+    def get(self, request):
+        orders = Order.objects.filter(user=request.user).order_by("-created_at")
+
+        serializer = OrderSerializer(orders, many=True)
+
+        return Response(serializer.data)
+
+class ForgotPasswordThrottle(AnonRateThrottle):
+    scope = "forgot_password"
+
+
+class ForgotPasswordView(APIView):
+
+    throttle_classes = [ForgotPasswordThrottle]
+
+    def post(self, request):
+
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+
+        except User.DoesNotExist:
+            return Response({
+                "message": "If an account exists with this email, a reset link has been sent."
+            })
+
+        uid = urlsafe_base64_encode(
+            force_bytes(user.pk)
+        )
+
+        token = default_token_generator.make_token(user)
+
+        encoded_token = base64.urlsafe_b64encode(
+            token.encode()
+        ).decode()
+
+        reset_link = (
+            f"http://localhost:5173/reset-password/"
+            f"{uid}/{encoded_token}"
+        )
+
+        send_mail(
+            subject="Reset your ShopKart password",
+
+            message=f"""
+Hello,
+
+You requested a password reset for your ShopKart account.
+
+Use this link to reset your password:
+
+{reset_link}
+
+If you did not request this, you can ignore this email.
+""",
+
+            from_email=None,
+            recipient_list=[user.email],
+        )
+
+        return Response({
+            "message": "If an account exists with this email, a reset link has been sent."
+        })
+    
+class ResetPasswordView(APIView):
+
+    def post(self, request):
+
+        uid = request.data.get("uid")
+        encoded_token = request.data.get("token")
+        password = request.data.get("password")
+
+        if not uid or not encoded_token or not password:
+            return Response(
+                {"error": "UID, token and password are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user_id = urlsafe_base64_decode(uid).decode()
+            user = User.objects.get(pk=user_id)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"error": "Invalid reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            token = base64.urlsafe_b64decode(
+                encoded_token.encode()
+            ).decode()
+
+        except Exception:
+            return Response(
+                {"error": "Invalid reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {"error": "Invalid or expired reset link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            validate_password(password, user)
+
+        except Exception as error:
+            return Response(
+                {"error": error.messages},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(password)
+        user.save()
+
+        return Response({
+            "message": "Password reset successfully."
+        })
+
+class EmailVerificationView(APIView):
+
+    def get(self, request, uid, token):
+
+        try:
+            user_id = urlsafe_base64_decode(uid).decode()
+            user = User.objects.get(pk=user_id)
+
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response(
+                {"error": "Invalid verification link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {"error": "Invalid or expired verification link."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        profile = Profile.objects.get(user=user)
+
+        profile.email_verified = True
+        profile.save()
+
+        return Response({
+            "message": "Email verified successfully."
+        })
+
+
+class ResendVerificationThrottle(AnonRateThrottle):
+    scope = "resend_verification"
+
+class ResendVerificationEmailView(APIView):
+
+    throttle_classes = [ResendVerificationThrottle]
+
+    def post(self, request):
+
+        email = request.data.get("email")
+
+        if not email:
+            return Response(
+                {"error": "Email is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(email=email)
+            profile = Profile.objects.get(user=user)
+
+        except (User.DoesNotExist, Profile.DoesNotExist):
+            return Response({
+                "message": (
+                    "If an account exists with this email, "
+                    "a verification link has been sent."
+                )
+            })
+
+        if profile.email_verified:
+            return Response({
+                "message": "This email is already verified."
+            })
+
+        uid = urlsafe_base64_encode(
+            force_bytes(user.pk)
+        )
+
+        token = default_token_generator.make_token(user)
+
+        verification_link = (
+            f"http://localhost:5173/verify-email/"
+            f"{uid}/{token}"
+        )
+
+        send_mail(
+            subject="Verify your ShopKart email",
+
+            message=f"""
+Hello,
+
+Please verify your ShopKart email address by clicking the link below:
+
+{verification_link}
+
+If you did not create this account, you can ignore this email.
+""",
+
+            from_email=None,
+            recipient_list=[user.email],
+        )
+
+        return Response({
+            "message": "If an account exists with this email, a verification link has been sent."
+        })

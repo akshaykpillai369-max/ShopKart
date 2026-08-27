@@ -50,6 +50,7 @@ class Profile(models.Model):
     name = models.CharField(max_length=100)
     mobile_number = models.CharField(max_length=15)
     address = models.TextField()
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -59,11 +60,17 @@ class Cart(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    def __str__(self):
+            return f"{self.user}'s  Cart"
+
 class CartItem(models.Model):
 
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product= models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)], default=1)
+
+    def __str__(self):
+        return f"{self.cart.user}'s  {self.product.name} "
 
     class Meta:
         constraints = [
@@ -73,6 +80,7 @@ class CartItem(models.Model):
             )
         ]
 
+
 class Order(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="orders")
     address = models.TextField()
@@ -80,9 +88,15 @@ class Order(models.Model):
     status = models.CharField(max_length=20,default="Pending")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Order #{self.id} - {self.user.username}"
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="items")
     product = models.ForeignKey(Product,on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     price = models.IntegerField()
+
+    def __str__(self):
+        return f"Order #{self.order.id} - {self.product.name} x {self.quantity}"

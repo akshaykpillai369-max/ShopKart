@@ -42,6 +42,24 @@ export default function Cart() {
                     Continue Shopping
                 </Link>
 
+                <Link
+                    to="/orders"
+                    className="
+                        mt-6
+                        px-6 py-2.5
+                        rounded-lg
+                        bg-gray-200 dark:bg-gray-700
+                        text-gray-900 dark:text-white
+                        text-sm font-medium
+                        hover:opacity-80
+                        transition
+                        block
+                        text-center
+                    "
+                >
+                    View My Orders
+                </Link>
+
             </div>
         );
     }
@@ -247,6 +265,25 @@ export default function Cart() {
                                 </span>
 
                             </div>
+
+                            <Link
+                                to="/orders"
+                                className="
+                                    w-full
+                                    mt-3
+                                    py-3
+                                    rounded-lg
+                                    bg-gray-200 dark:bg-gray-700
+                                    text-gray-900 dark:text-white
+                                    text-sm font-medium
+                                    hover:opacity-80
+                                    transition
+                                    block
+                                    text-center
+                                "
+                            >
+                                View My Orders
+                            </Link>
 
                             <Link
                                     to="/checkout"

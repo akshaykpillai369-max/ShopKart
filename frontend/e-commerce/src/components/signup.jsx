@@ -8,6 +8,7 @@ export default function SignUpForm() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [password2, setPassword2] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
     const { googleLogin } = useLogin()
@@ -15,31 +16,35 @@ export default function SignUpForm() {
     const passwordMismatch =
         password2.length > 0 && password !== password2
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
+const handleSubmit = async (e) => {
+    e.preventDefault()
 
-        const data = {
-            email,
-            password,
-            password2,
-        }
+    setLoading(true)
 
-        axios
-            .post(
-                "http://localhost:8000/api/auth/signup/",
-                data
-            )
-            .then((response) => {
-                navigate("/login", {
-                    state: {
-                        message: response.data.message,
-                    },
-                })
-            })
-            .catch((error) => {
-                console.log(error.response?.data)
-            })
+    try {
+        const response = await axios.post(
+            "http://localhost:8000/api/auth/signup/",
+            {
+                email,
+                password,
+                password2,
+            }
+        )
+
+        navigate("/login", {
+            state: {
+                message: response.data.message,
+            },
+        })
+
+    } catch (error) {
+
+        console.log("Signup failed:", error)
+
+    } finally {
+        setLoading(false)
     }
+}
 
     const handleGoogleSuccess = (credentialResponse) => {
         googleLogin(credentialResponse.credential)
@@ -362,7 +367,7 @@ export default function SignUpForm() {
                             {/* CREATE ACCOUNT */}
                             <button
                                 type="submit"
-                                disabled={passwordMismatch}
+                                disabled={passwordMismatch || loading}
                                 className="
                                     w-full
                                     rounded-lg
@@ -387,7 +392,7 @@ export default function SignUpForm() {
                                     disabled:translate-y-0
                                 "
                             >
-                                Create account
+                                {loading ? "Creating account..." : "Create account"}
                             </button>
 
                         </form>

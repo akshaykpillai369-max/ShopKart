@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useLogin } from "../context/AuthContext"
 import { GoogleLogin } from "@react-oauth/google"
@@ -12,27 +12,130 @@ export default function LoginForm() {
 
     const { login, googleLogin } = useLogin()
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
+    const [error, setError] = useState("")
+    const [needsVerification, setNeedsVerification] = useState(false)
+    const [resendMail, setResendMail] = useState(0)
+    const [resendLoading, setResendLoading] = useState(false)
 
-        login(email, password)
-            .then(() => {
-                navigate("/")
-            })
-            .catch((error) => {
-                console.log("Login failed", error)
-            })
+    useEffect(() => {
+    if (resendMail <= 0) {
+        return
     }
 
-    const handleGoogleSuccess = (credentialResponse) => {
-        googleLogin(credentialResponse.credential)
-            .then(() => {
-                navigate("/")
-            })
-            .catch((error) => {
-                console.log("Google login failed", error)
-            })
+    const timer = setInterval(() => {
+        setResendMail((previous) => previous - 1)
+    }, 1000)
+
+    return () => clearInterval(timer)
+}, [resendMail])
+
+const handleSubmit = (e) => {
+    e.preventDefault()
+
+    setError("")
+    setNeedsVerification(false)
+
+    login(email, password)
+        .then(() => {
+            navigate("/")
+        })
+        .catch((error) => {
+            console.log("Login failed", error)
+
+            if (
+                error.response?.status === 403 &&
+                error.response?.data?.error ===
+                    "Please verify your email before logging in."
+            ) {
+                setError(error.response.data.error)
+                setNeedsVerification(true)
+                return
+            }
+
+            if (error.response?.data?.detail) {
+                setError(error.response.data.detail)
+                return
+            }
+
+            if (error.response?.data?.error) {
+                setError(error.response.data.error)
+                return
+            }
+
+            setError("Invalid email or password.")
+        })
+}
+
+const handleResendVerification = async () => {
+    if (resendMail > 0 || resendLoading) {
+        return
     }
+
+    setResendLoading(true)
+    setError("")
+
+    try {
+        const response = await fetch(
+            "http://localhost:8000/api/auth/resend-verification/",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: email,
+                }),
+            }
+        )
+
+        const data = await response.json()
+
+        if (!response.ok) {
+            throw {
+                response: {
+                    status: response.status,
+                    data: data,
+                },
+            }
+        }
+
+        setError(data.message)
+        setResendMail(60)
+
+    } catch (error) {
+        console.log("Resend verification failed", error)
+
+        if (error.response?.status === 429) {
+            setError(
+                "Please wait before requesting another verification email."
+            )
+        } else {
+            setError(
+                error.response?.data?.error ||
+                "Unable to resend verification email."
+            )
+        }
+
+    } finally {
+        setResendLoading(false)
+    }
+}
+const handleGoogleSuccess = (credentialResponse) => {
+    setError("")
+
+    googleLogin(credentialResponse.credential)
+        .then(() => {
+            navigate("/")
+        })
+        .catch((error) => {
+            console.log("Google login failed", error)
+
+            setError(
+                error.response?.data?.error ||
+                "Google login failed. Please try again."
+            )
+        })
+}
 
     return (
         <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-10">
@@ -98,7 +201,7 @@ export default function LoginForm() {
                         </div>
 
                         {/* HEADING */}
-                        <div className="mb-8">
+                        <div className="mb-3">
 
                             <h1 className="text-3xl font-bold text-white">
                                 Welcome back
@@ -107,6 +210,38 @@ export default function LoginForm() {
                             <p className="mt-2 text-sm text-gray-400">
                                 Sign in to your account to continue.
                             </p>
+
+                            {error && (
+                                <div className="mt-2 rounded-lg border border-red-800 bg-red-900/20 px-4 py-3 text-sm text-red-400">
+                                    {error}
+
+                                    {needsVerification && (
+                                        <div className="mt-3">
+
+                                            {resendMail > 0 ? (
+                                                <p className="text-xs text-gray-400">
+                                                    You can request another verification email in{" "}
+                                                    <span className="font-semibold text-white">
+                                                        {resendMail}s
+                                    </span>
+                                </p>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={handleResendVerification}
+                                    disabled={resendLoading}
+                                    className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50"
+                                >
+                                    {resendLoading
+                                        ? "Sending..."
+                                        : "Resend verification email"}
+                                </button>
+                                                )}
+
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                         </div>
 
@@ -195,7 +330,7 @@ export default function LoginForm() {
                                     width="100%"
                                     onSuccess={handleGoogleSuccess}
                                     onError={() => {
-                                        console.log("Google login failed")
+                                        setError("Google login failed. Please try again.")
                                     }}
                                 />
 
@@ -266,12 +401,12 @@ export default function LoginForm() {
                                         Password
                                     </label>
 
-                                    <a
-                                        href="#"
+                                    <Link
+                                        to="/forgot-password"
                                         className="text-xs text-blue-400 hover:text-blue-300 hover:underline"
                                     >
                                         Forgot password?
-                                    </a>
+                                    </Link>
 
                                 </div>
 
@@ -287,25 +422,6 @@ export default function LoginForm() {
                                     className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                                     required
                                 />
-
-                            </div>
-
-                            {/* REMEMBER ME */}
-                            <div className="flex items-center gap-3">
-
-                                <input
-                                    type="checkbox"
-                                    id="remember"
-                                    name="remember"
-                                    className="w-4 h-4 rounded border-gray-700 bg-gray-800 text-blue-600 focus:ring-blue-500"
-                                />
-
-                                <label
-                                    htmlFor="remember"
-                                    className="text-sm text-gray-400"
-                                >
-                                    Remember me
-                                </label>
 
                             </div>
 

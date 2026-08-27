@@ -1,44 +1,44 @@
-import { useState, createContext, useContext, useEffect } from "react";
-import axios from "axios";
+import { useState, createContext, useContext, useEffect } from "react"
+import axios from "axios"
 
-const AuthContext = createContext();
+const AuthContext = createContext()
 
-export const useLogin = () => useContext(AuthContext);
+export const useLogin = () => useContext(AuthContext)
 
 export default function AuthProvider({ children }) {
-    const [access, setAccess] = useState(null);
 
-    const [user, setUser] = useState(() => {
-        return localStorage.getItem("shopkart_user");
-    });
+    const [access, setAccess] = useState(null)
+    const [authLoading, setAuthLoading] = useState(true)
 
-useEffect(() => {
-    if (!user) {
-        setAccess(null);
-        return;
-    }
+    useEffect(() => {
 
-    axios
-        .post(
-            "http://localhost:8000/api/token/refresh/",
-            null,
-            {
-                withCredentials: true
-            }
-        )
-        .then((response) => {
-            setAccess(response.data.access);
-        })
-        .catch(() => {
-            setAccess(null);
-        });
-}, []);
+        axios
+            .post(
+                "http://localhost:8000/api/token/refresh/",
+                null,
+                {
+                    withCredentials: true
+                }
+            )
+            .then((response) => {
+                setAccess(response.data.access)
+            })
+            .catch(() => {
+                setAccess(null)
+            })
+            .finally(() => {
+                setAuthLoading(false)
+            })
+
+    }, [])
+
 
     const login = (email, password) => {
+
         const data = {
             username: email,
             password: password,
-        };
+        }
 
         return axios
             .post(
@@ -49,17 +49,15 @@ useEffect(() => {
                 }
             )
             .then((response) => {
-                setAccess(response.data.access);
 
-                const username = email.split("@")[0];
+                setAccess(response.data.access)
 
-                setUser(username);
-                localStorage.setItem("shopkart_user", username);
-            });
-    };
+            })
+    }
 
-    // Google login
+
     const googleLogin = (credential) => {
+
         return axios
             .post(
                 "http://localhost:8000/api/auth/google/",
@@ -71,17 +69,15 @@ useEffect(() => {
                 }
             )
             .then((response) => {
-                setAccess(response.data.access);
 
-                const username = response.data.email.split("@")[0];
+                setAccess(response.data.access)
 
-                setUser(username);
-                localStorage.setItem("shopkart_user", username);
-            });
-    };
+            })
+    }
 
-    // Logout
+
     const logout = () => {
+
         return axios
             .post(
                 "http://localhost:8000/api/logout/",
@@ -91,15 +87,28 @@ useEffect(() => {
                 }
             )
             .finally(() => {
-                setAccess(null);
-                setUser(null);
-                localStorage.removeItem("shopkart_user");
-            });
-    };
+
+                setAccess(null)
+
+            })
+    }
+
+
+    const isLoggedIn = !!access
+
 
     return (
-        <AuthContext value={{ access, login, user, logout, googleLogin }}>
+        <AuthContext
+            value={{
+                access,
+                login,
+                isLoggedIn,
+                logout,
+                googleLogin,
+                authLoading
+            }}
+        >
             {children}
         </AuthContext>
-    );
+    )
 }
