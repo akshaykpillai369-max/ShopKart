@@ -103,12 +103,9 @@ export default function MyOrders() {
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
 
                                 <div>
-                                    <h2 className="font-semibold text-gray-900 dark:text-white">
-                                        Order #{order.id}
-                                    </h2>
 
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                        {new Date(order.created_at).toLocaleDateString()}
+                                       Ordered On :  {new Date(order.created_at).toLocaleDateString()}
                                     </p>
                                 </div>
 

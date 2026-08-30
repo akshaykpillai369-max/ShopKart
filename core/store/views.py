@@ -345,7 +345,7 @@ class GoogleLoginView(APIView):
             return response
 
         except ValueError:
-            return Response(
+           return Response(
                 {"error": "Invalid Google credential"},
                 status=status.HTTP_400_BAD_REQUEST
             )
