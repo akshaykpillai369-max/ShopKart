@@ -8,7 +8,7 @@ User = get_user_model()
 # Create your models here.
 class Product(models.Model):
 
-    name = models.CharField(max_length=100)
+    name = models.TextField()
     description = models.TextField()
     price = models.IntegerField()
     discounted_price = models.IntegerField()

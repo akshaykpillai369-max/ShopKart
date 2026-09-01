@@ -3,8 +3,8 @@ from .views import ProductViewSet, SignUpView, CookieTokenObtainPairView
 from .views import CookieTokenRefreshView, AuthTestView, ProfileView, GoogleLoginView
 from .views import AddToCartView, CartView, CartItemView, LogoutView, OrderView
 from rest_framework.routers import DefaultRouter
-from .views import ForgotPasswordView , ResetPasswordView, EmailVerificationView
-from .views import ResendVerificationEmailView
+from .views import ForgotPasswordView, ResetPasswordView, EmailVerificationView
+from .views import ResendVerificationEmailView, OrderDetailView
 
 
 router = DefaultRouter()
@@ -28,4 +28,5 @@ urlpatterns = [
      path('auth/reset-password/',ResetPasswordView.as_view(),name='reset-password'),
      path("auth/verify-email/<uid>/<token>/",EmailVerificationView.as_view(),name="verify_email"),
      path("auth/resend-verification/",ResendVerificationEmailView.as_view(),name="resend_verification"),
+     path("orders/<int:pk>/",OrderDetailView.as_view(),name='order_detailed_view'),
 ]

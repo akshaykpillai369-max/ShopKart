@@ -319,11 +319,26 @@ class GoogleLoginView(APIView):
             if User.objects.filter(email=email).exists():
                 user = User.objects.get(email=email)
 
+                Profile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        "name": name,
+                        "mobile_number": "",
+                        "address": "",
+                        "email_verified": True,
+                    }
+                )
+
             else:
                 user = User.objects.create_user(
                     username=email,
                     email=email,
                 )
+
+                profile = Profile.objects.get(user=user)
+                profile.name = name
+                profile.email_verified = True
+                profile.save()
 
             refresh = RefreshToken.for_user(user)
             access = refresh.access_token
@@ -406,7 +421,7 @@ class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        cart = Cart.objects.get(
+        cart, _ = Cart.objects.get_or_create(
             user=request.user
         )
 
@@ -427,14 +442,21 @@ class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, cart_item_id):
-        cart_item = CartItem.objects.get(
+        cart_item = get_object_or_404(
+            CartItem,
             id=cart_item_id,
             cart__user=request.user
         )
 
-        quantity = int(
-            request.data.get("quantity")
-        )
+        quantity = request.data.get("quantity")
+
+        try:
+            quantity = int(quantity)
+        except (TypeError, ValueError):
+            return Response(
+                {"message": "Quantity must be a valid number."},
+                status=400
+            )
 
         if (
             quantity <= 0
@@ -442,8 +464,7 @@ class CartItemView(APIView):
         ):
             return Response(
                 {
-                    "message":
-                    "Invalid quantity or not enough stock available."
+                    "message": "Invalid quantity or not enough stock available."
                 },
                 status=400
             )
@@ -457,7 +478,8 @@ class CartItemView(APIView):
         })
 
     def delete(self, request, cart_item_id):
-        cart_item = CartItem.objects.get(
+        cart_item = get_object_or_404(
+            CartItem,
             id=cart_item_id,
             cart__user=request.user
         )
@@ -471,68 +493,240 @@ class CartItemView(APIView):
 class OrderView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        orders = (
+            Order.objects
+            .filter(user=request.user)
+            .prefetch_related(
+                "items__product"
+            )
+            .order_by("-created_at")
+        )
+
+        serializer = OrderSerializer(orders, many=True)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
     def post(self, request):
+        address = request.data.get("address")
+        product_id = request.data.get("product_id")
+        quantity = request.data.get("quantity")
+
+        if not address or not address.strip():
+            return Response(
+                {"message": "Delivery address is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if product_id is not None:
+            try:
+                quantity = int(quantity)
+            except (TypeError, ValueError):
+                return Response(
+                    {"message": "Invalid quantity."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if quantity < 1:
+                return Response(
+                    {"message": "Quantity must be at least 1."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            try:
+                with transaction.atomic():
+
+                    product = (
+                        Product.objects
+                        .select_for_update()
+                        .get(id=product_id)
+                    )
+
+                    if not product.active:
+                        return Response(
+                            {
+                                "message":
+                                f"{product.name} is currently unavailable."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    if product.stock < quantity:
+                        return Response(
+                            {
+                                "message":
+                                f"Not enough stock available for "
+                                f"{product.name}."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    total_cost = (
+                        product.discounted_price * quantity
+                    )
+
+                    order = Order.objects.create(
+                        user=request.user,
+                        address=address.strip(),
+                        total_cost=total_cost
+                    )
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=quantity,
+                        price=product.discounted_price
+                    )
+
+                    product.stock -= quantity
+
+                    product.save(
+                        update_fields=["stock"]
+                    )
+
+                serializer = OrderSerializer(order)
+
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED
+                )
+
+            except Product.DoesNotExist:
+                return Response(
+                    {"message": "Product not found."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
         try:
-            cart = Cart.objects.get(user=request.user)
+            with transaction.atomic():
+
+                cart = Cart.objects.get(
+                    user=request.user
+                )
+
+                cart_items = list(
+                    CartItem.objects
+                    .select_related("product")
+                    .filter(cart=cart)
+                )
+
+                if not cart_items:
+                    return Response(
+                        {"message": "Cart is empty."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                total_cost = 0
+                locked_products = []
+
+                # Lock products and validate stock
+
+                for item in cart_items:
+
+                    product = (
+                        Product.objects
+                        .select_for_update()
+                        .get(id=item.product.id)
+                    )
+
+                    if not product.active:
+                        return Response(
+                            {
+                                "message":
+                                f"{product.name} is currently unavailable."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    if product.stock < item.quantity:
+                        return Response(
+                            {
+                                "message":
+                                f"Not enough stock available for "
+                                f"{product.name}."
+                            },
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    total_cost += (
+                        product.discounted_price *
+                        item.quantity
+                    )
+
+                    locked_products.append(
+                        (item, product)
+                    )
+
+
+                order = Order.objects.create(
+                    user=request.user,
+                    address=address.strip(),
+                    total_cost=total_cost
+                )
+
+                for item, product in locked_products:
+
+                    OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity=item.quantity,
+                        price=product.discounted_price
+                    )
+
+                    product.stock -= item.quantity
+
+                    product.save(
+                        update_fields=["stock"]
+                    )
+
+                CartItem.objects.filter(
+                    cart=cart
+                ).delete()
+
+            serializer = OrderSerializer(order)
+
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+
         except Cart.DoesNotExist:
             return Response(
                 {"message": "Cart is empty."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        cart_items = CartItem.objects.filter(cart=cart)
 
-        if not cart_items.exists():
+class OrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            order = (
+                Order.objects
+                .prefetch_related("items__product")
+                .get(
+                    id=pk,
+                    user=request.user
+                )
+            )
+
+            serializer = OrderSerializer(order)
+
             return Response(
-                {"message": "Cart is empty."},
-                status=status.HTTP_400_BAD_REQUEST
+                serializer.data,
+                status=status.HTTP_200_OK
             )
 
-        for item in cart_items:
-            if not item.product.active or item.product.stock < item.quantity:
-                return Response(
-                    {
-                        "message": f"Not enough stock available for {item.product.name}."
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        total_cost = 0
-
-        for item in cart_items:
-            total_cost += item.product.discounted_price * item.quantity
-
-        with transaction.atomic():
-            order = Order.objects.create(
-                user=request.user,
-                address=request.data.get("address"),
-                total_cost=total_cost
+        except Order.DoesNotExist:
+            return Response(
+                {"message": "Order not found."},
+                status=status.HTTP_404_NOT_FOUND
             )
-
-            for item in cart_items:
-                OrderItem.objects.create(
-                    order=order,
-                    product=item.product,
-                    quantity=item.quantity,
-                    price=item.product.discounted_price
-                )
-
-            cart_items.delete()
-
-        serializer = OrderSerializer(order)
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED
-        )
-
-    def get(self, request):
-        orders = Order.objects.filter(user=request.user).order_by("-created_at")
-
-        serializer = OrderSerializer(orders, many=True)
-
-        return Response(serializer.data)
-
+        
 class ForgotPasswordThrottle(AnonRateThrottle):
     scope = "forgot_password"
 
