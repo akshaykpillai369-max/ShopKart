@@ -1,20 +1,20 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useLogin } from "./AuthContext";
+import { createContext, useContext, useState, useEffect } from "react"
+import { useLogin } from "./AuthContext"
 
-const CartContext = createContext();
+const CartContext = createContext()
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => useContext(CartContext)
 
 export default function CartProvider({ children }) {
-    const { access } = useLogin();
+    const { access } = useLogin()
 
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState([])
 
     // Get cart from backend
     useEffect(() => {
         if (!access) {
-            setCart([]);
-            return;
+            setCart([])
+            return
         }
 
         const fetchCart = async () => {
@@ -27,13 +27,13 @@ export default function CartProvider({ children }) {
                         },
                         credentials: "include",
                     }
-                );
+                )
 
                 if (!response.ok) {
-                    throw new Error("Failed to fetch cart");
+                    throw new Error("Failed to fetch cart")
                 }
 
-                const data = await response.json();
+                const data = await response.json()
 
                 const formattedCart = data.map((item) => ({
                     id: item.product.id,
@@ -43,17 +43,19 @@ export default function CartProvider({ children }) {
                     image: item.product.image,
                     slug: item.product.slug,
                     quantity: item.quantity,
-                }));
+                    stock: item.product.stock,
+                }))
 
-                setCart(formattedCart);
+                setCart(formattedCart)
             } catch (error) {
-                console.error("Error fetching cart:", error);
+                console.error("Error fetching cart:", error)
             }
-        };
+        }
 
-        fetchCart();
-    }, [access]);
+        fetchCart()
+    }, [access])
 
+    // Add product to cart
     const addToCart = async (product) => {
         try {
             const response = await fetch(
@@ -69,19 +71,19 @@ export default function CartProvider({ children }) {
                         product_id: product.id,
                     }),
                 }
-            );
+            )
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
-                console.error(data.message);
-                return;
+                console.error(data.message)
+                return
             }
 
             setCart((currentCart) => {
                 const exists = currentCart.some(
                     (item) => item.id === product.id
-                );
+                )
 
                 if (exists) {
                     return currentCart.map((item) => {
@@ -90,11 +92,12 @@ export default function CartProvider({ children }) {
                                 ...item,
                                 cartItemId: data.cart_item_id,
                                 quantity: data.quantity,
-                            };
+                                stock: product.stock,
+                            }
                         }
 
-                        return item;
-                    });
+                        return item
+                    })
                 }
 
                 return [
@@ -103,18 +106,25 @@ export default function CartProvider({ children }) {
                         ...product,
                         quantity: data.quantity,
                         cartItemId: data.cart_item_id,
+                        stock: product.stock,
                     },
-                ];
-            });
+                ]
+            })
         } catch (error) {
-            console.error("Error adding product to cart:", error);
+            console.error("Error adding product to cart:", error)
         }
-    };
+    }
 
+    // Increase quantity
     const increaseQuantity = async (id) => {
-        const item = cart.find((item) => item.id === id);
+        const item = cart.find((item) => item.id === id)
 
-        if (!item) return;
+        if (!item) return
+
+        // Don't allow quantity to go above available stock
+        if (item.quantity >= item.stock) {
+            return
+        }
 
         try {
             const response = await fetch(
@@ -130,13 +140,13 @@ export default function CartProvider({ children }) {
                         quantity: item.quantity + 1,
                     }),
                 }
-            );
+            )
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
-                console.error(data.message);
-                return;
+                console.error(data.message)
+                return
             }
 
             setCart((currentCart) =>
@@ -145,25 +155,26 @@ export default function CartProvider({ children }) {
                         return {
                             ...item,
                             quantity: data.quantity,
-                        };
+                        }
                     }
 
-                    return item;
+                    return item
                 })
-            );
+            )
         } catch (error) {
-            console.error("Error increasing quantity:", error);
+            console.error("Error increasing quantity:", error)
         }
-    };
+    }
 
+    // Decrease quantity
     const decreaseQuantity = async (id) => {
-        const item = cart.find((item) => item.id === id);
+        const item = cart.find((item) => item.id === id)
 
-        if (!item) return;
+        if (!item) return
 
         if (item.quantity === 1) {
-            await removeFromCart(id);
-            return;
+            await removeFromCart(id)
+            return
         }
 
         try {
@@ -180,13 +191,13 @@ export default function CartProvider({ children }) {
                         quantity: item.quantity - 1,
                     }),
                 }
-            );
+            )
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
-                console.error(data.message);
-                return;
+                console.error(data.message)
+                return
             }
 
             setCart((currentCart) =>
@@ -195,21 +206,22 @@ export default function CartProvider({ children }) {
                         return {
                             ...item,
                             quantity: data.quantity,
-                        };
+                        }
                     }
 
-                    return item;
+                    return item
                 })
-            );
+            )
         } catch (error) {
-            console.error("Error decreasing quantity:", error);
+            console.error("Error decreasing quantity:", error)
         }
-    };
+    }
 
+    // Remove item
     const removeFromCart = async (id) => {
-        const item = cart.find((item) => item.id === id);
+        const item = cart.find((item) => item.id === id)
 
-        if (!item) return;
+        if (!item) return
 
         try {
             const response = await fetch(
@@ -221,25 +233,25 @@ export default function CartProvider({ children }) {
                     },
                     credentials: "include",
                 }
-            );
+            )
 
-            const data = await response.json();
+            const data = await response.json()
 
             if (!response.ok) {
-                console.error(data.message);
-                return;
+                console.error(data.message)
+                return
             }
 
             setCart((currentCart) =>
                 currentCart.filter((item) => item.id !== id)
-            );
+            )
         } catch (error) {
-            console.error("Error removing cart item:", error);
+            console.error("Error removing cart item:", error)
         }
-    };
+    }
 
     const clearCart = () => {
-    setCart([])
+        setCart([])
     }
 
     return (
@@ -250,10 +262,10 @@ export default function CartProvider({ children }) {
                 increaseQuantity,
                 decreaseQuantity,
                 removeFromCart,
-                clearCart
+                clearCart,
             }}
         >
             {children}
         </CartContext>
-    );
+    )
 }

@@ -1,4 +1,5 @@
 import re
+import time
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -28,7 +29,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.password_validation import validate_password
 import base64
-
+import razorpay
 from .serializers import (
     CartItemSerializer,
     ProductSerializer,
@@ -942,4 +943,159 @@ If you did not create this account, you can ignore this email.
 
         return Response({
             "message": "If an account exists with this email, a verification link has been sent."
+        })
+
+class CreatePaymentOrderView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        amount = request.data.get("amount")
+
+        try:
+            amount = int(amount)
+        except (TypeError, ValueError):
+            return Response(
+                {"message": "Invalid amount."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if amount <= 0:
+            return Response(
+                {"message": "Amount must be greater than zero."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        client = razorpay.Client(
+            auth=(
+                settings.RAZORPAY_KEY_ID,
+                settings.RAZORPAY_KEY_SECRET
+            )
+        )
+
+        payment_order = client.order.create({
+            "amount": amount * 100,
+            "currency": "INR",
+            "payment_capture": 1
+        })
+
+        return Response({
+            "order_id": payment_order["id"],
+            "amount": payment_order["amount"],
+            "currency": payment_order["currency"],
+            "key": settings.RAZORPAY_KEY_ID
+        })
+
+class VerifyPaymentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        razorpay_signature = request.data.get("razorpay_signature")
+
+        address = request.data.get("address")
+        items = request.data.get("items")
+
+        if (
+            not razorpay_order_id
+            or not razorpay_payment_id
+            or not razorpay_signature
+        ):
+            return Response(
+                {"message": "Payment details are incomplete."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not address:
+            return Response(
+                {"message": "Delivery address is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not items:
+            return Response(
+                {"message": "No products found."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        client = razorpay.Client(
+            auth=(
+                settings.RAZORPAY_KEY_ID,
+                settings.RAZORPAY_KEY_SECRET
+            )
+        )
+
+        try:
+            client.utility.verify_payment_signature({
+                "razorpay_order_id": razorpay_order_id,
+                "razorpay_payment_id": razorpay_payment_id,
+                "razorpay_signature": razorpay_signature
+            })
+
+        except razorpay.errors.SignatureVerificationError:
+            return Response(
+                {"message": "Payment verification failed."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            with transaction.atomic():
+
+                total_cost = 0
+                order_items = []
+
+                for item in items:
+
+                    product_id = item.get("id")
+                    quantity = int(item.get("quantity", 0))
+
+                    if quantity <= 0:
+                        raise ValueError("Invalid quantity.")
+
+                    product = Product.objects.get(id=product_id)
+
+                    price = product.discounted_price
+
+                    total_cost += price * quantity
+
+                    order_items.append({
+                        "product": product,
+                        "quantity": quantity,
+                        "price": price,
+                        
+
+                    })
+
+                order = Order.objects.create(
+                    user=request.user,
+                    address=address,
+                    total_cost=total_cost,
+                    status="Pending",
+                )
+
+                for item in order_items:
+                    OrderItem.objects.create(
+                        order=order,
+                        product=item["product"],
+                        quantity=item["quantity"],
+                        price=item["price"]
+                    )
+
+        except Product.DoesNotExist:
+            return Response(
+                {"message": "One or more products no longer exist."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except (ValueError, TypeError):
+            return Response(
+                {"message": "Invalid order data."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        return Response({
+            "message": "Payment verified and order created successfully.",
+            "order_id": order.id
         })

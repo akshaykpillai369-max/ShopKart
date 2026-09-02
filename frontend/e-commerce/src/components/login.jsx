@@ -379,9 +379,10 @@ const handleGoogleSuccess = (credentialResponse) => {
                                     id="email"
                                     name="email"
                                     value={email}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setEmail(e.target.value)
-                                    }
+                                        setError("")
+                                    }}
                                     placeholder="you@example.com"
                                     className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                                     required
@@ -415,9 +416,10 @@ const handleGoogleSuccess = (credentialResponse) => {
                                     id="password"
                                     name="password"
                                     value={password}
-                                    onChange={(e) =>
+                                    onChange={(e) => {
                                         setPassword(e.target.value)
-                                    }
+                                        setError('')
+                                    }}
                                     placeholder="Enter your password"
                                     className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                                     required

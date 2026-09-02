@@ -16,6 +16,9 @@ import MyOrders from "./pages/MyOrders"
 import ResetPassword from "./components/ResetPassword"
 import ForgotPassword from "./components/ForgotPassword"
 import VerifyEmail from "./components/VerifyEmail"
+import OrderDetail from "./pages/OrderDetail"
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsAndConditions from "./components/TermsAndConditions";
 
 export default function App() {
   return (
@@ -49,6 +52,10 @@ export default function App() {
               <Route path="/reset-password/:uid/:token" element={<ResetPassword />}/>
               <Route path="/forgot-password" element={<ForgotPassword />}/>
               <Route path="/verify-email/:uid/:token" element={<VerifyEmail />}/>
+              <Route path="/orders/:id" element={<OrderDetail />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions/>} />
+              
               
               <Route path="/account" element={
                 <ProtectedRoute>

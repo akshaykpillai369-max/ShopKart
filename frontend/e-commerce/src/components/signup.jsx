@@ -9,6 +9,7 @@ export default function SignUpForm() {
     const [password, setPassword] = useState("")
     const [password2, setPassword2] = useState("")
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
 
     const navigate = useNavigate()
     const { googleLogin } = useLogin()
@@ -20,6 +21,7 @@ const handleSubmit = async (e) => {
     e.preventDefault()
 
     setLoading(true)
+    setError("")
 
     try {
         const response = await axios.post(
@@ -38,9 +40,28 @@ const handleSubmit = async (e) => {
         })
 
     } catch (error) {
-
         console.log("Signup failed:", error)
 
+        const backendError = error.response?.data
+
+        if (backendError) {
+            if (typeof backendError === "string") {
+                setError(backendError)
+            } else {
+                const messages = Object.values(backendError)
+                    .flat()
+                    .join(" ")
+
+                setError(
+                    messages ||
+                    "You may have missed some fields. Please fill them and try again."
+                )
+            }
+        } else {
+            setError(
+                "You may have missed some fields. Please fill them and try again."
+            )
+        }
     } finally {
         setLoading(false)
     }
@@ -241,6 +262,12 @@ const handleSubmit = async (e) => {
 
                         </div>
 
+                        {error && (
+                            <div className="mb-5 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm font-medium">
+                                {error}
+                            </div>
+                        )}
+
                         {/* SIGNUP FORM */}
                         <form
                             onSubmit={handleSubmit}
@@ -346,8 +373,9 @@ const handleSubmit = async (e) => {
                                     I agree to the{" "}
 
                                     <a
-                                        href="#"
+                                        href="/terms-and-conditions"
                                         className="text-blue-400 hover:text-blue-300 hover:underline"
+                                
                                     >
                                         Terms and Conditions
                                     </a>{" "}
@@ -355,7 +383,7 @@ const handleSubmit = async (e) => {
                                     and{" "}
 
                                     <a
-                                        href="#"
+                                        href="/privacy-policy"
                                         className="text-blue-400 hover:text-blue-300 hover:underline"
                                     >
                                         Privacy Policy

@@ -5,110 +5,192 @@ const AuthContext = createContext()
 
 export const useLogin = () => useContext(AuthContext)
 
-export default function AuthProvider({ children }) {
+const API = "http://localhost:8000"
 
+export default function AuthProvider({ children }) {
     const [access, setAccess] = useState(null)
     const [authLoading, setAuthLoading] = useState(true)
+    const [profile, setProfile] = useState(null)
+
+    // -----------------------------------
+    // Fetch profile
+    // -----------------------------------
+
+    const fetchProfile = async (token) => {
+        const response = await axios.get(
+            `${API}/api/profile/`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        )
+
+        setProfile(response.data)
+
+        return response.data
+    }
+
+    // -----------------------------------
+    // Refresh access token
+    // -----------------------------------
+
+    const refreshAccessToken = async () => {
+        try {
+            const response = await axios.post(
+                `${API}/api/token/refresh/`,
+                null,
+                {
+                    withCredentials: true,
+                }
+            )
+
+            const newAccess = response.data.access
+
+            setAccess(newAccess)
+
+            return newAccess
+        } catch (error) {
+            setAccess(null)
+            setProfile(null)
+
+            throw error
+        }
+    }
+
+    // -----------------------------------
+    // Restore login when page refreshes
+    // -----------------------------------
 
     useEffect(() => {
+        const restoreSession = async () => {
+            try {
+                const token = await refreshAccessToken()
 
-        axios
-            .post(
-                "http://localhost:8000/api/token/refresh/",
-                null,
-                {
-                    withCredentials: true
-                }
-            )
-            .then((response) => {
-                setAccess(response.data.access)
-            })
-            .catch(() => {
+                await fetchProfile(token)
+            } catch (error) {
                 setAccess(null)
-            })
-            .finally(() => {
+                setProfile(null)
+            } finally {
                 setAuthLoading(false)
-            })
-
-    }, [])
-
-
-    const login = (email, password) => {
-
-        const data = {
-            username: email,
-            password: password,
+            }
         }
 
-        return axios
-            .post(
-                "http://localhost:8000/api/token/",
-                data,
-                {
-                    withCredentials: true,
-                }
-            )
-            .then((response) => {
+        restoreSession()
+    }, [])
 
-                setAccess(response.data.access)
+    // -----------------------------------
+    // Login
+    // -----------------------------------
 
-            })
+    const login = async (email, password) => {
+        const response = await axios.post(
+            `${API}/api/token/`,
+            {
+                username: email,
+                password: password,
+            },
+            {
+                withCredentials: true,
+            }
+        )
+
+        const token = response.data.access
+
+        setAccess(token)
+
+        await fetchProfile(token)
+
+        return response
     }
 
+    // -----------------------------------
+    // Google Login
+    // -----------------------------------
 
-    const googleLogin = (credential) => {
+    const googleLogin = async (credential) => {
+        const response = await axios.post(
+            `${API}/api/auth/google/`,
+            {
+                credential: credential,
+            },
+            {
+                withCredentials: true,
+            }
+        )
 
-        return axios
-            .post(
-                "http://localhost:8000/api/auth/google/",
-                {
-                    credential: credential,
-                },
-                {
-                    withCredentials: true,
-                }
-            )
-            .then((response) => {
+        const token = response.data.access
 
-                setAccess(response.data.access)
+        setAccess(token)
 
-            })
+        await fetchProfile(token)
+
+        return response
     }
 
+    // -----------------------------------
+    // Logout
+    // -----------------------------------
 
-    const logout = () => {
-
-        return axios
-            .post(
-                "http://localhost:8000/api/logout/",
+    const logout = async () => {
+        try {
+            await axios.post(
+                `${API}/api/logout/`,
                 null,
                 {
                     withCredentials: true,
                 }
             )
-            .finally(() => {
-
-                setAccess(null)
-
-            })
+        } finally {
+            setAccess(null)
+            setProfile(null)
+        }
     }
 
+    // -----------------------------------
+    // Automatically refresh token
+    // -----------------------------------
+
+    useEffect(() => {
+        if (!access) {
+            return
+        }
+
+        const interval = setInterval(
+            async () => {
+                try {
+                    const newToken = await refreshAccessToken()
+
+                    await fetchProfile(newToken)
+                } catch (error) {
+                    console.error(
+                        "Automatic token refresh failed:",
+                        error
+                    )
+                }
+            },
+            4 * 60 * 1000
+        )
+
+        return () => clearInterval(interval)
+    }, [access])
 
     const isLoggedIn = !!access
 
-
     return (
-        <AuthContext
+        <AuthContext.Provider
             value={{
                 access,
                 login,
                 isLoggedIn,
                 logout,
                 googleLogin,
-                authLoading
+                authLoading,
+                profile,
+                refreshAccessToken,
             }}
         >
             {children}
-        </AuthContext>
+        </AuthContext.Provider>
     )
 }

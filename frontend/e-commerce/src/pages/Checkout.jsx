@@ -1,203 +1,631 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useLogin } from "../context/AuthContext"
 import { useCart } from "../context/CartContext"
 
 export default function Checkout() {
     const { access } = useLogin()
     const { cart, clearCart } = useCart()
+
     const navigate = useNavigate()
+    const location = useLocation()
 
     const [address, setAddress] = useState("")
     const [loading, setLoading] = useState(true)
     const [placingOrder, setPlacingOrder] = useState(false)
     const [error, setError] = useState("")
 
+    // Buy Now data
+    const buyNowProduct = location.state?.product
+    const buyNowQuantity = location.state?.quantity || 1
+
+    // Items being checked out
+    const checkoutItems = buyNowProduct
+        ? [
+              {
+                  ...buyNowProduct,
+                  quantity: buyNowQuantity,
+              },
+          ]
+        : cart
+
+    // Load Razorpay Checkout
+    useEffect(() => {
+        const script = document.createElement("script")
+
+        script.src = "https://checkout.razorpay.com/v1/checkout.js"
+        script.async = true
+
+        document.body.appendChild(script)
+
+        return () => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script)
+            }
+        }
+    }, [])
+
+    // Load user profile
     useEffect(() => {
         if (!access) {
             navigate("/login")
             return
         }
 
-        axios.get("http://localhost:8000/api/profile/", {
-            headers: {
-                Authorization: "Bearer " + access
-            }
-        })
-        .then((response) => {
-            setAddress(response.data.address || "")
-            setLoading(false)
-        })
-        .catch(() => {
-            setError("Failed to load your profile.")
-            setLoading(false)
-        })
+        axios
+            .get("http://localhost:8000/api/profile/", {
+                headers: {
+                    Authorization: "Bearer " + access,
+                },
+            })
+            .then((response) => {
+                setAddress(response.data.address || "")
+            })
+            .catch((err) => {
+                console.error("Profile error:", err)
+                setError("We couldn't load your delivery address.")
+            })
+            .finally(() => {
+                setLoading(false)
+            })
     }, [access, navigate])
 
-    let totalCost = 0
+    // Calculate total
+    const totalCost = checkoutItems.reduce((total, item) => {
+        return total + Number(item.discounted_price) * item.quantity
+    }, 0)
 
-    for (const item of cart) {
-        totalCost += item.discounted_price * item.quantity
-    }
+    // Start payment
+    const handlePlaceOrder = async () => {
+        if (placingOrder) {
+            return
+        }
 
-    const handlePlaceOrder = () => {
         if (!address.trim()) {
-            setError("Please add a delivery address before placing the order.")
+            setError(
+                "Please add a delivery address before placing your order."
+            )
+            return
+        }
+
+        if (!window.Razorpay) {
+            setError(
+                "Payment system is still loading. Please try again."
+            )
+            return
+        }
+
+        if (totalCost <= 0) {
+            setError("Invalid order amount.")
             return
         }
 
         setPlacingOrder(true)
         setError("")
 
-        axios.post(
-            "http://localhost:8000/api/orders/",
-            {
-                address: address
-            },
-            {
-                headers: {
-                    Authorization: "Bearer " + access
+        try {
+            // Create Razorpay order through Django
+            const response = await axios.post(
+                "http://localhost:8000/api/payment/create/",
+                {
+                    amount: totalCost,
+                },
+                {
+                    headers: {
+                        Authorization: "Bearer " + access,
+                    },
                 }
-            }
-        )
-        .then(() => {
-            clearCart()
-            navigate("/order-success")
-        })
-        .catch((error) => {
-            setError(
-                error.response?.data?.message ||
-                "Failed to place order."
             )
+
+            const data = response.data
+
+            console.log("Razorpay order response:", data)
+
+          
+
+            if (!data.order_id) {
+                throw new Error("Razorpay order ID was not returned.")
+            }
+
+            if (!data.key) {
+                throw new Error("Razorpay key was not returned.")
+            }
+
+            const options = {
+                key: data.key,
+
+                amount: data.amount,
+                currency: data.currency || "INR",
+
+                name: "ShopKart",
+                description: "ShopKart Order",
+
+                order_id: data.order_id,
+
+                prefill: {
+                    name: data.customer_name || "",
+                    email: data.customer_email || "",
+                    contact: data.customer_phone || "",
+                },
+
+                notes: {
+                    address: address,
+                },
+
+
+                handler: async function (paymentResponse) {
+                    try {
+                        console.log(
+                            "Razorpay payment successful:",
+                            paymentResponse
+                        )
+
+                        const response = await axios.post(
+                            "http://localhost:8000/api/payment/verify/",
+                            {
+                                razorpay_order_id: paymentResponse.razorpay_order_id,
+                                razorpay_payment_id: paymentResponse.razorpay_payment_id,
+                                razorpay_signature: paymentResponse.razorpay_signature,
+
+                                address: address,
+
+                                items: checkoutItems.map((item) => ({
+                                    id: item.id,
+                                    quantity: item.quantity,
+                                })),
+                            },
+                            {
+                                headers: {
+                                    Authorization: `Bearer ${access}`,
+                                },
+                            }
+                        )
+
+                        console.log("Order created:", response.data)
+
+                        clearCart()
+                        navigate("/order-success")
+
+                    } catch (verifyError) {
+                        console.error(
+                            "Payment verification error:",
+                            verifyError
+                        )
+
+                        console.error(
+                            "Backend response:",
+                            verifyError.response?.data
+                        )
+
+                        setError(
+                            verifyError.response?.data?.message ||
+                                verifyError.response?.data?.error ||
+                                "Payment was completed, but verification failed."
+                        )
+
+                        setPlacingOrder(false)
+                    }
+                },
+
+                modal: {
+                    ondismiss: function () {
+                        setPlacingOrder(false)
+                    },
+                },
+            }
+
+            const razorpay = new window.Razorpay(options)
+
+            razorpay.on("payment.failed", function (paymentError) {
+                console.error(
+                    "Razorpay payment failed:",
+                    paymentError
+                )
+
+                setError(
+                    paymentError.error?.description ||
+                        "Payment failed. Please try again."
+                )
+
+                setPlacingOrder(false)
+            })
+
+            razorpay.open()
+        } catch (paymentError) {
+            console.error("Payment error:", paymentError)
+            console.error(
+                "Backend response:",
+                paymentError.response?.data
+            )
+
+            setError(
+                paymentError.response?.data?.message ||
+                    paymentError.response?.data?.error ||
+                    paymentError.message ||
+                    "We couldn't start the payment. Please try again."
+            )
+
             setPlacingOrder(false)
-        })
+        }
     }
 
+    // Loading state
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-50">
-                <h2 className="text-sm text-gray-500 animate-pulse">
-                    Loading checkout...
-                </h2>
+            <div className="min-h-[70vh] flex items-center justify-center px-4">
+                <div className="text-center">
+                    <div className="w-8 h-8 mx-auto mb-4 border-2 border-gray-300 border-t-gray-800 dark:border-gray-600 dark:border-t-white rounded-full animate-spin" />
+
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Preparing your checkout...
+                    </p>
+                </div>
             </div>
         )
     }
 
-    if (cart.length === 0) {
+    // Empty cart
+    if (checkoutItems.length === 0) {
         return (
-            <div className="text-center py-16">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                    Your cart is empty.
-                </h2>
+            <div className="min-h-[70vh] flex items-center justify-center px-4">
+                <div className="text-center max-w-md">
+                    <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.7"
+                            className="w-7 h-7 text-gray-500 dark:text-gray-400"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M3.75 4.5h2l1.65 9.2a2 2 0 0 0 1.97 1.65h7.86a2 2 0 0 0 1.94-1.52L20.5 8H7"
+                            />
 
-                <Link
-                    to="/"
-                    className="inline-block mt-4 px-6 py-3 bg-blue-600 text-white rounded-lg"
-                >
-                    Continue Shopping
-                </Link>
+                            <circle cx="10" cy="19" r="1.25" />
+                            <circle cx="17" cy="19" r="1.25" />
+                        </svg>
+                    </div>
+
+                    <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                        Your cart is empty
+                    </h2>
+
+                    <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        Add some products to your cart before
+                        proceeding to checkout.
+                    </p>
+
+                    <Link
+                        to="/"
+                        className="
+                            inline-flex items-center justify-center
+                            mt-6
+                            px-6 py-3
+                            rounded-lg
+                            bg-gray-900 hover:bg-gray-800
+                            dark:bg-white dark:hover:bg-gray-200
+                            dark:text-gray-900
+                            text-white
+                            text-sm font-medium
+                            transition-colors
+                        "
+                    >
+                        Continue Shopping
+                    </Link>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-                Checkout
-            </h1>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-6 sm:py-8 md:py-12">
+            <div className="max-w-6xl mx-auto">
 
-            <div className="grid md:grid-cols-2 gap-8">
+                {/* Header */}
+                <div className="mb-6 sm:mb-8">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1.5">
+                        {buyNowProduct
+                            ? "Quick purchase"
+                            : "Review your purchase"}
+                    </p>
 
-                <section className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                            Delivery Address
-                        </h2>
+                    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-gray-900 dark:text-white">
+                        Checkout
+                    </h1>
+                </div>
 
-                        <Link
-                            to="/account"
-                            className="text-sm text-blue-600 hover:underline"
-                        >
-                            Edit Address
-                        </Link>
-                    </div>
-
-                    {address.trim() ? (
-                        <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-                                {address}
-                            </p>
+                {/* Error */}
+                {error && (
+                    <div className="mb-5 sm:mb-6 flex items-start gap-3 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/10 px-4 py-3">
+                        <div className="mt-0.5 w-5 h-5 shrink-0 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 flex items-center justify-center text-xs font-bold">
+                            !
                         </div>
-                    ) : (
-                        <div className="border border-red-200 bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-                            <p className="text-red-600 dark:text-red-400">
-                                You haven't added a delivery address yet.
-                            </p>
+
+                        <p className="text-sm leading-5 text-red-700 dark:text-red-400">
+                            {error}
+                        </p>
+                    </div>
+                )}
+
+                {/* Main Layout */}
+                <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-5 sm:gap-6 lg:gap-8">
+
+                    {/* Delivery Address */}
+                    <section
+                        className="
+                            bg-white dark:bg-gray-900
+                            border border-gray-200 dark:border-gray-800
+                            rounded-2xl
+                            p-5 sm:p-6 md:p-7
+                            shadow-sm
+                        "
+                    >
+                        <div className="flex items-start justify-between gap-4 mb-5 sm:mb-6">
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
+                                    Step 1
+                                </p>
+
+                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Delivery Address
+                                </h2>
+                            </div>
 
                             <Link
                                 to="/account"
-                                className="inline-block mt-3 text-sm font-medium text-blue-600 hover:underline"
+                                className="
+                                    shrink-0
+                                    text-sm font-medium
+                                    text-blue-600 dark:text-blue-400
+                                    hover:underline
+                                "
                             >
-                                Add Address
+                                {address.trim() ? "Edit" : "Add"}
                             </Link>
                         </div>
-                    )}
 
-                    {error && (
-                        <p className="mt-4 text-sm text-red-500">
-                            {error}
-                        </p>
-                    )}
-                </section>
-
-                <section className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                        Order Summary
-                    </h2>
-
-                    <div className="space-y-4">
-                        {cart.map((item) => (
+                        {address.trim() ? (
                             <div
-                                key={item.id}
-                                className="flex justify-between gap-4"
+                                className="
+                                    rounded-xl
+                                    border border-gray-200 dark:border-gray-700
+                                    bg-gray-50 dark:bg-gray-800/60
+                                    p-4 sm:p-5
+                                "
                             >
-                                <div>
-                                    <p className="font-medium text-gray-900 dark:text-white">
-                                        {item.name}
-                                    </p>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
 
-                                    <p className="text-sm text-gray-500">
-                                        ₹{item.discounted_price} × {item.quantity}
-                                    </p>
+                                    <span className="text-xs font-medium uppercase tracking-wide text-green-600 dark:text-green-400">
+                                        Delivery address
+                                    </span>
                                 </div>
 
-                                <p className="font-medium text-gray-900 dark:text-white">
-                                    ₹{item.discounted_price * item.quantity}
+                                <p
+                                    className="
+                                        text-sm
+                                        leading-6
+                                        text-gray-700 dark:text-gray-300
+                                        whitespace-pre-line
+                                        wrap-break-words
+                                    "
+                                >
+                                    {address}
                                 </p>
                             </div>
-                        ))}
-                    </div>
+                        ) : (
+                            <div
+                                className="
+                                    rounded-xl
+                                    border border-dashed
+                                    border-red-300 dark:border-red-800
+                                    bg-red-50/50 dark:bg-red-900/10
+                                    p-4 sm:p-5
+                                "
+                            >
+                                <p className="font-medium text-sm text-red-700 dark:text-red-400">
+                                    No delivery address added
+                                </p>
 
-                    <div className="border-t border-gray-200 dark:border-gray-700 mt-6 pt-4 flex justify-between">
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                            Total
-                        </span>
+                                <p className="mt-1 text-sm text-red-600/80 dark:text-red-400/80">
+                                    Add your address before placing this order.
+                                </p>
 
-                        <span className="text-xl font-bold text-gray-900 dark:text-white">
-                            ₹{totalCost}
-                        </span>
-                    </div>
+                                <Link
+                                    to="/account"
+                                    className="
+                                        inline-flex
+                                        mt-4
+                                        px-4 py-2
+                                        rounded-lg
+                                        bg-gray-900 hover:bg-gray-800
+                                        dark:bg-white dark:hover:bg-gray-200
+                                        dark:text-gray-900
+                                        text-white
+                                        text-sm font-medium
+                                        transition-colors
+                                    "
+                                >
+                                    Add Address
+                                </Link>
+                            </div>
+                        )}
 
-                    <button
-                        onClick={handlePlaceOrder}
-                        disabled={placingOrder || !address.trim()}
-                        className="w-full mt-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white font-medium transition"
+                        <div className="mt-5 sm:mt-6 pt-5 border-t border-gray-100 dark:border-gray-800">
+                            <p className="text-xs leading-5 text-gray-500 dark:text-gray-500">
+                                Your order will be delivered to the address
+                                shown above.
+                            </p>
+                        </div>
+                    </section>
+
+                    {/* Order Summary */}
+                    <section
+                        className="
+                            bg-white dark:bg-gray-900
+                            border border-gray-200 dark:border-gray-800
+                            rounded-2xl
+                            p-5 sm:p-6 md:p-7
+                            shadow-sm
+                        "
                     >
-                        {placingOrder ? "Placing Order..." : "Place Order"}
-                    </button>
-                </section>
+                        <div className="mb-5 sm:mb-6">
+                            <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
+                                Step 2
+                            </p>
 
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                Order Summary
+                            </h2>
+                        </div>
+
+                        {/* Products */}
+                        <div className="space-y-5">
+                            {checkoutItems.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-start gap-3 sm:gap-4 min-w-0"
+                                >
+                                    {/* Product Image */}
+                                    <div
+                                        className="
+                                            w-16 h-16
+                                            shrink-0
+                                            rounded-xl
+                                            bg-white
+                                            border border-gray-100
+                                            p-2
+                                            flex items-center justify-center
+                                            overflow-hidden
+                                        "
+                                    >
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-full object-contain rounded-lg"
+                                        />
+                                    </div>
+
+                                    {/* Product Details */}
+                                    <div className="min-w-0 flex-1">
+                                        <p
+                                            className="
+                                                font-medium
+                                                text-sm
+                                                leading-5
+                                                text-gray-900 dark:text-white
+                                                wrap-break-words
+                                                line-clamp-2
+                                            "
+                                        >
+                                            {item.name}
+                                        </p>
+
+                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            ₹{item.discounted_price} ×{" "}
+                                            {item.quantity}
+                                        </p>
+                                    </div>
+
+                                    {/* Item Total */}
+                                    <p
+                                        className="
+                                            shrink-0
+                                            font-medium
+                                            text-sm
+                                            text-gray-900 dark:text-white
+                                            whitespace-nowrap
+                                        "
+                                    >
+                                        ₹
+                                        {Number(item.discounted_price) *
+                                            item.quantity}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Total */}
+                        <div
+                            className="
+                                mt-6 sm:mt-7
+                                pt-5
+                                border-t border-gray-200 dark:border-gray-800
+                            "
+                        >
+                            <div className="flex items-center justify-between gap-4">
+                                <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    Total
+                                </span>
+
+                                <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    ₹{totalCost}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Pay Now */}
+                        <button
+                            onClick={handlePlaceOrder}
+                            disabled={
+                                placingOrder ||
+                                !address.trim()
+                            }
+                            className="
+                                w-full
+                                mt-6
+                                h-12
+                                rounded-xl
+                                bg-orange-500
+                                hover:bg-orange-600
+                                disabled:bg-gray-300
+                                dark:disabled:bg-gray-700
+                                disabled:text-gray-500
+                                dark:disabled:text-gray-500
+                                text-white
+                                font-semibold
+                                text-sm
+                                transition-colors
+                                disabled:cursor-not-allowed
+                            "
+                        >
+                            {placingOrder ? (
+                                <span className="inline-flex items-center justify-center gap-2">
+                                    <span
+                                        className="
+                                            w-4 h-4
+                                            border-2
+                                            border-white/40
+                                            border-t-white
+                                            rounded-full
+                                            animate-spin
+                                        "
+                                    />
+
+                                    Processing...
+                                </span>
+                            ) : (
+                                `Pay ₹${totalCost}`
+                            )}
+                        </button>
+
+                        <p
+                            className="
+                                mt-3
+                                text-center
+                                text-xs
+                                leading-5
+                                text-gray-400 dark:text-gray-500
+                            "
+                        >
+                            Secure payment powered by Razorpay.
+                        </p>
+                    </section>
+                </div>
             </div>
         </div>
     )
