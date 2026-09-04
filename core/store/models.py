@@ -100,3 +100,21 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"Order #{self.order.id} - {self.product.name} x {self.quantity}"
+
+
+class Review(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    rating = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                name="unique_user_product_review"
+            )
+        ]
+    def __str__(self):
+        return f' {self.user.username} {self.product.slug} review '

@@ -11,7 +11,10 @@ export default function ProductDetail() {
     const { slug } = useParams()
 
     const [product, setProduct] = useState()
+    const [reviews, setReviews] = useState()
     const [loading, setLoading] = useState(true)
+    const [rating, setRating] = useState(0)
+    const [description, setDescription] = useState("")
     const [error, setError] = useState("")
 
     const inCart = product
@@ -19,25 +22,94 @@ export default function ProductDetail() {
         : false
 
     useEffect(() => {
+    setLoading(true)
+    setError("")
+
+    axios
+        .get(`http://localhost:8000/api/products/${slug}/`, {
+            headers: {
+                Authorization: `Bearer ${access}`,
+            },
+        })
+        .then((response) => {
+            setProduct(response.data)
+        })
+        .catch((err) => {
+            setError(
+                err.response?.status === 404
+                    ? "Product not found."
+                    : "Failed to load product."
+            )
+        })
+        .finally(() => {
+            setLoading(false)
+        })
+}, [slug, access])
+
+    useEffect(() => {
+        if (!product) return
+
         setLoading(true)
         setError("")
 
         axios
-            .get(`http://localhost:8000/api/products/${slug}/`)
+            .get(`http://localhost:8000/api/reviews/?product=${product.id}`)
             .then((response) => {
-                setProduct(response.data)
+                setReviews(response.data)
             })
-            .catch((err) => {
-                setError(
-                    err.response?.status === 404
-                        ? "Product not found."
-                        : "Failed to load product."
-                )
+            .catch(() => {
+                setError("Failed to load reviews.")
             })
             .finally(() => {
                 setLoading(false)
             })
-    }, [slug])
+    }, [product])
+
+    const handleSubmit = () => {
+        const data = {
+            product: product.id,
+            rating: rating,
+            description: description
+        }
+
+        axios
+            .post(
+                "http://127.0.0.1:8000/api/reviews/",
+                data,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access}`,
+                    },
+                }
+            )
+            .then(() => {
+                setRating(0)
+                setDescription("")
+
+                // Refresh product so can_review becomes false
+                axios
+                    .get(`http://localhost:8000/api/products/${slug}/`, {
+                        headers: {
+                            Authorization: `Bearer ${access}`,
+                        },
+                    })
+                    .then((response) => {
+                        setProduct(response.data)
+                    })
+
+                // Refresh reviews
+                axios
+                    .get(
+                        `http://localhost:8000/api/reviews/?product=${product.id}`
+                    )
+                    .then((response) => {
+                        setReviews(response.data.results || response.data)
+                    })
+            })
+            .catch((error) => {
+                console.log(error.response?.data)
+            })
+    }
 
     if (loading) {
         return (
@@ -108,7 +180,6 @@ export default function ProductDetail() {
                     />
                 </section>
 
-
                 {/* Product Information */}
                 <section className="flex flex-col min-w-0">
 
@@ -126,9 +197,9 @@ export default function ProductDetail() {
                         {product.name}
                     </h1>
 
-
                     {/* Rating */}
-                    <div className="mt-4 flex items-center gap-2">
+                    {product.rating_count > 0 && (
+                   <div className="mt-4 flex items-center gap-2">
                         <div
                             className="
                                 inline-flex items-center gap-2
@@ -138,7 +209,7 @@ export default function ProductDetail() {
                             "
                         >
                             <span className="font-bold text-sm text-gray-900 dark:text-gray-100">
-                                {product.display_rating}
+                                {product.rating_avg}
                             </span>
 
                             <span className="text-emerald-600 dark:text-emerald-400">
@@ -148,13 +219,11 @@ export default function ProductDetail() {
                             <div className="h-4 w-px bg-gray-300 dark:bg-gray-600" />
 
                             <span className="text-sm text-gray-500 dark:text-gray-400">
-                                {product.rating_count
-                                    ? product.rating_count.toLocaleString()
-                                    : 0}
+                                {product.rating_count}
                             </span>
                         </div>
                     </div>
-
+                    )}
 
                     {/* Price */}
                     <div className="mt-6 flex flex-wrap items-baseline gap-3">
@@ -168,7 +237,6 @@ export default function ProductDetail() {
                             </span>
                         )}
                     </div>
-
 
                     {/* Stock Status */}
                     <div className="mt-3">
@@ -186,19 +254,6 @@ export default function ProductDetail() {
                             </span>
                         )}
                     </div>
-
-
-                    {/* Description */}
-                    <div className="border-t border-b border-gray-200 dark:border-gray-700 py-5 mt-6">
-                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                            About this Item
-                        </h3>
-
-                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed wrap-break-words">
-                            {product.description}
-                        </p>
-                    </div>
-
 
                     {/* Buttons */}
                     <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -297,9 +352,266 @@ export default function ProductDetail() {
 
                     </div>
 
+                    {/* Description */}
+                    <div  >
+                        <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                            About this Item
+                        </h3>
+
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed wrap-break-words">
+                            {product.description}
+                        </p>
+                    </div>
+
                 </section>
+            </div>
+
+             {/* Write Review */}
+             {product.can_review && (
+            <div className="mt-10 border-t border-gray-200 dark:border-gray-700 pt-8">
+
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                            Write a Review
+                        </h2>
+
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            How was your experience with this product?
+                        </p>
+                    </div>
+
+                    
+                </div>
+
+
+                {/* Rating */}
+                <div className="mt-6">
+
+                    <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                            Your rating
+                        </p>
+
+                        {rating > 0 ? (
+                            <span className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                                {rating} out of 5
+                            </span>
+                        ) : (
+                            <span className="text-xs text-gray-400 dark:text-gray-500">
+                                Tap a star to rate
+                            </span>
+                        )}
+                    </div>
+
+
+                    <div className="inline-flex items-center gap-1.5 p-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700">
+
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                                key={star}
+                                type="button"
+                                onClick={() => setRating(star)}
+                                className={`
+                                    w-11 h-11
+                                    sm:w-12 sm:h-12
+                                    flex items-center justify-center
+                                    rounded-xl
+                                    transition-all duration-200
+                                    hover:scale-110
+                                    active:scale-95
+                                    focus:outline-none
+                                    focus:ring-2
+                                    focus:ring-emerald-500/40
+                                    ${
+                                        star <= rating
+                                            ? `
+                                                text-emerald-500
+                                                bg-emerald-50
+                                                dark:bg-emerald-900/30
+                                                shadow-sm
+                                            `
+                                            : `
+                                                text-gray-300
+                                                dark:text-gray-600
+                                                hover:text-emerald-400
+                                                hover:bg-emerald-50
+                                                dark:hover:bg-emerald-900/20
+                                            `
+                                    }
+                                `}
+                                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+                            >
+                                <span
+                                    className={`
+                                        text-2xl sm:text-3xl
+                                        leading-none
+                                        transition-transform duration-200
+                                        ${
+                                            star <= rating
+                                                ? "drop-shadow-sm"
+                                                : ""
+                                        }
+                                    `}
+                                >
+                                    ★
+                                </span>
+                            </button>
+                        ))}
+
+                    </div>
+                </div>
+
+
+                {/* Review text */}
+                <div className="mt-6">
+
+                    <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                        Your review
+                    </label>
+
+                    <div className="relative">
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Tell other shoppers what you liked or disliked..."
+                            rows={5}
+                            maxLength={500}
+                            className="
+                                w-full
+                                rounded-xl
+                                border border-gray-200
+                                dark:border-gray-700
+                                bg-gray-50
+                                dark:bg-gray-800/60
+                                px-4 py-3.5
+                                text-sm
+                                text-gray-900
+                                dark:text-white
+                                placeholder-gray-400
+                                dark:placeholder-gray-500
+                                outline-none
+                                transition-all
+                                focus:bg-white
+                                dark:focus:bg-gray-800
+                                focus:border-emerald-500
+                                focus:ring-4
+                                focus:ring-emerald-500/10
+                                resize-none
+                            "
+                        />
+
+                        <span className="absolute bottom-3 right-3 text-xs text-gray-400 dark:text-gray-500">
+                            {description.length}/500
+                        </span>
+                    </div>
+
+                </div>
+
+
+                {/* Submit */}
+                <div className="mt-5 flex items-center justify-between gap-4">
+
+                    <p className="hidden sm:block text-xs text-gray-400 dark:text-gray-500">
+                        Be honest and helpful to other shoppers.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={rating === 0 || !description.trim()}
+                        className="
+                            w-full sm:w-auto
+                            min-w-37.5
+                            px-6 py-3
+                            rounded-xl
+                            bg-emerald-600
+                            hover:bg-emerald-700
+                            disabled:bg-gray-200
+                            dark:disabled:bg-gray-700
+                            disabled:text-gray-400
+                            dark:disabled:text-gray-500
+                            disabled:cursor-not-allowed
+                            text-white
+                            font-semibold
+                            text-sm
+                            transition-all
+                            shadow-sm
+                            hover:shadow-md
+                            active:scale-[0.98]
+                        "
+                    >
+                        Submit Review
+                    </button>
+
+                </div>
+
+                
 
             </div>
+            )}
+
+            {/* Existing Reviews */}
+                <div className="mt-10 border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Customer Reviews
+                    </h2>
+
+                    {reviews && reviews.length > 0 ? (
+                        <div className="mt-6 space-y-5">
+                            {reviews.map((review) => (
+                                <div
+                                    key={review.id}
+                                    className="
+                                        rounded-xl
+                                        border border-gray-200
+                                        dark:border-gray-700
+                                        bg-white
+                                        dark:bg-gray-800
+                                        p-5
+                                    "
+                                >
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div>
+                                            <p className="font-semibold text-gray-900 dark:text-white">
+                                                {review.user}
+                                            </p>
+
+                                            <div className="mt-1 flex items-center gap-1">
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <span
+                                                        key={star}
+                                                        className={
+                                                            star <= review.rating
+                                                                ? "text-emerald-500"
+                                                                : "text-gray-300 dark:text-gray-600"
+                                                        }
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                                            {new Date(review.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+
+                                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                        {review.description}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
+                            No reviews yet.
+                        </p>
+                    )}
+                </div>
+
         </div>
     )
 }

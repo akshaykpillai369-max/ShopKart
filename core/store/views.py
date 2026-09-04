@@ -8,10 +8,11 @@ from django.shortcuts import get_object_or_404
 from django.db import transaction
 
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.throttling import AnonRateThrottle
 
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
@@ -21,7 +22,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from .models import Cart, CartItem, Product, Profile, OrderItem, Order
+from .models import Cart, CartItem, Product, Profile, OrderItem, Order, Review
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -35,7 +36,8 @@ from .serializers import (
     ProductSerializer,
     ProfileSerializer,
     SignupSerializer,
-    OrderSerializer
+    OrderSerializer,
+    ReviewSerializer
 )
 
 User = get_user_model()
@@ -1094,8 +1096,64 @@ class VerifyPaymentView(APIView):
                 {"message": "Invalid order data."},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        CartItem.objects.filter(cart__user=request.user).delete()
+
         
         return Response({
             "message": "Payment verified and order created successfully.",
             "order_id": order.id
         })
+
+class IsReviewOwner(BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+
+        if obj.user == request.user:
+            return True
+
+        else :
+
+            return False
+
+class ReviewViewSet(ModelViewSet):
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        queryset = Review.objects.filter(product__active=True)
+
+        product_id = self.request.query_params.get("product")
+
+        if product_id:
+            queryset = queryset.filter(product_id=product_id)
+
+        return queryset
+
+    def get_permissions(self):
+
+        if self.action in ['list', 'retrieve']:
+
+            return [AllowAny()]
+
+        elif self.action == 'create':
+
+            return [IsAuthenticated()]
+        
+        else:
+            
+            return [IsAuthenticated(), IsReviewOwner()]
+
+    def perform_create(self, serializer):
+
+        product = serializer.validated_data["product"]
+
+        user = self.request.user
+        order_item = OrderItem.objects.filter(order__user = user, order__status = 'Delivered', product = product)
+
+        if order_item.exists():
+            serializer.save(user = user)
+
+        else:
+            raise PermissionDenied("You can review only products you have purchased and received.")
+
+        

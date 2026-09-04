@@ -184,7 +184,7 @@ export default function Checkout() {
 
                         console.log("Order created:", response.data)
 
-                        clearCart()
+                        clearCart('')
                         navigate("/order-success")
 
                     } catch (verifyError) {

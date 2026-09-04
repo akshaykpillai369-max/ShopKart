@@ -74,6 +74,7 @@ export default function ProductList() {
                                     )}
 
                                     {/* Rating */}
+                                    {product.rating_count > 0 && (
                                     <div
                                         className="
                                             absolute
@@ -95,13 +96,15 @@ export default function ProductList() {
                                         "
                                     >
                                         <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100">
-                                            {product.display_rating}
+                                            {product.rating_avg}
                                         </span>
 
                                         <span className="text-[10px] text-emerald-500">
                                             ★
                                         </span>
                                     </div>
+
+                                    )}
 
                                     {/* Discount */}
                                     {discount > 0 && (
