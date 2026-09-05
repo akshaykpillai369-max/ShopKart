@@ -1,29 +1,47 @@
-import { useEffect, useState } from "react";
-import { useProduct } from "../context/productContext";
+import { useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
-export default function SearchBar(){
-
-  const {handleSearch} = useProduct()
+export default function SearchBar() {
 
     const [query, setQuery] = useState("")
 
-    useEffect(() => {
+    const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
 
-        const timer = setTimeout(() => {
+    const category = searchParams.get("category")
 
-            handleSearch(query)
-        }, 400)
 
-        return () => clearTimeout(timer)
-    }, [query, handleSearch])
+    const handleSearch = (value) => {
+
+        setQuery(value)
+
+        const trimmed = value.trim()
+
+        if (!trimmed) {
+            return
+        }
+
+        const search = encodeURIComponent(trimmed)
+
+        if (category) {
+            navigate(
+                `/products?category=${encodeURIComponent(category)}&search=${search}`
+            )
+        } else {
+            navigate(
+                `/products?search=${search}`
+            )
+        }
+    }
+
 
     return (
-    <input
-      type="text"
-      placeholder="Search products..."
-      value={query}
-      onChange={(e) => setQuery(e.target.value)}
-      className="sm:w-100 lg:w-120 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  );
+        <input
+            type="text"
+            placeholder="Search products..."
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="sm:w-100 lg:w-120 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+    )
 }

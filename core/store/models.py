@@ -6,6 +6,16 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # Create your models here.
+
+class Category(models.Model):
+
+    name= models.CharField(max_length=100)
+    image = models.ImageField(upload_to='category/images/')
+
+    def __str__(self):
+        return self.name
+
+
 class Product(models.Model):
 
     name = models.TextField()
@@ -13,10 +23,11 @@ class Product(models.Model):
     price = models.IntegerField()
     discounted_price = models.IntegerField()
     rating = models.DecimalField(max_digits = 2 , decimal_places = 1, validators=[MinValueValidator(1), MaxValueValidator(5)], default=5.0)
-    image = models.ImageField(upload_to='images/')
-    slug = models.SlugField(unique=True, blank=True)
+    image = models.ImageField(upload_to='images/', default= 'images/product_placeholder.png')
+    slug = models.SlugField(unique=True, blank=True, max_length=200)
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=10)
     active = models.BooleanField(default=True)
+    category = models.ForeignKey(Category , on_delete=models.PROTECT)
 
     @property
     def display_rating(self):
@@ -42,7 +53,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.slug
-
 
 class Profile(models.Model):
 

@@ -2,7 +2,7 @@ import ProductDetail from "./components/ProductDetail";
 import ProductList from "./components/ProductsList";
 import { Routes, Route } from "react-router-dom";
 import CartProvider from "./context/CartContext";
-import { ProductProvider } from "./context/productContext";
+import { ProductProvider } from "./context/ProductContext";
 import SignUpForm from "./components/signup";
 import StoreLayout from "./layouts/StoreLayouts";
 import ThemeProvider from "./context/ThemeContext";
@@ -19,6 +19,7 @@ import VerifyEmail from "./components/VerifyEmail"
 import OrderDetail from "./pages/OrderDetail"
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsAndConditions from "./components/TermsAndConditions";
+import Categories from "./pages/Categories";
 
 export default function App() {
   return (
@@ -34,11 +35,11 @@ export default function App() {
               {/* Store pages */}
               <Route element={<StoreLayout />}>
 
-                <Route path="/" element={<ProductList />}
-                />
+                <Route path="/" element={<Categories/>}/>
 
-                <Route path="/product/:slug" element={<ProductDetail />}
-                />
+                <Route path="/products" element={<ProductList />} />
+
+                <Route path="/product/:slug" element={<ProductDetail />}/>
 
               </Route>
 

@@ -1,5 +1,4 @@
 import re
-import time
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -22,7 +21,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token
 
-from .models import Cart, CartItem, Product, Profile, OrderItem, Order, Review
+from .models import Cart, CartItem, Product, Profile, OrderItem, Order, Review, Category
 
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -37,19 +36,30 @@ from .serializers import (
     ProfileSerializer,
     SignupSerializer,
     OrderSerializer,
-    ReviewSerializer
+    ReviewSerializer,
+    CategorySerializer,
 )
+from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
 
+class ProductPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
 class ProductViewSet(ReadOnlyModelViewSet):
     queryset = Product.objects.filter(active=True)
     serializer_class = ProductSerializer
     lookup_field = "slug"
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         queryset = self.queryset
+        category = self.request.query_params.get("category")
+
+        if category:
+            queryset = queryset.filter(category__name__iexact=category)
 
         search_query = (
             self.request.query_params.get("search", "")
@@ -122,6 +132,10 @@ class ProductViewSet(ReadOnlyModelViewSet):
                 )
 
         return queryset
+
+class CategoryViewSet(ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class SignUpView(APIView):
@@ -1056,12 +1070,15 @@ class VerifyPaymentView(APIView):
                     if quantity <= 0:
                         raise ValueError("Invalid quantity.")
 
-                    product = Product.objects.get(id=product_id)
+                    product = Product.objects.select_for_update().get(id=product_id)
+
+                    if product.stock < quantity:
+                        raise ValueError(
+                            f"Not enough stock for {product.name}."
+                        )
 
                     price = product.discounted_price
-
                     total_cost += price * quantity
-
                     order_items.append({
                         "product": product,
                         "quantity": quantity,
@@ -1069,6 +1086,9 @@ class VerifyPaymentView(APIView):
                         
 
                     })
+
+                    product.stock -= quantity
+                    product.save(update_fields=["stock"])
 
                 order = Order.objects.create(
                     user=request.user,

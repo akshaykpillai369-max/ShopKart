@@ -5,11 +5,12 @@ from .views import AddToCartView, CartView, CartItemView, LogoutView, OrderView
 from rest_framework.routers import DefaultRouter
 from .views import ForgotPasswordView, ResetPasswordView, EmailVerificationView
 from .views import ResendVerificationEmailView, OrderDetailView, CreatePaymentOrderView
-from .views import VerifyPaymentView, ReviewViewSet
+from .views import VerifyPaymentView, ReviewViewSet, CategoryViewSet
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
 router.register(r'reviews', ReviewViewSet, basename='review')
+router.register(r'categories', CategoryViewSet, basename='category')
  
 urlpatterns = [
 

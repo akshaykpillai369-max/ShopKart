@@ -1,8 +1,53 @@
-import { Link } from "react-router-dom"
-import { useProduct } from "../context/productContext"
+import { Link, useSearchParams } from "react-router-dom"
+import { useProduct } from "../context/ProductContext"
+import { useEffect } from "react"
 
 export default function ProductList() {
-    const { products, loading } = useProduct()
+
+    const {
+        products,
+        loading,
+        handleSearch,
+        handleCategory,
+        handlePage,
+        nextPage,
+        previousPage
+    } = useProduct()
+
+    const [searchParams] = useSearchParams()
+
+    const category = searchParams.get("category")
+    const search = searchParams.get("search")
+
+
+    useEffect(() => {
+
+        if (category && search) {
+
+            handleSearch(search, category)
+
+        } else if (category) {
+
+            handleCategory(category)
+
+        } else if (search) {
+
+            handleSearch(search)
+
+        } else {
+
+            handlePage("http://localhost:8000/api/products/")
+
+        }
+
+    }, [
+        category,
+        search,
+        handleSearch,
+        handleCategory,
+        handlePage
+    ])
+
 
     if (loading) {
         return (
@@ -14,17 +59,21 @@ export default function ProductList() {
         )
     }
 
+
     return (
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-2">
+
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-3 gap-y-6">
+
                 {products.map((product) => {
+
                     const discount =
                         product.price > product.discounted_price
                             ? Math.round(
-                                  ((product.price - product.discounted_price) /
-                                      product.price) *
-                                      100
-                              )
+                                ((product.price - product.discounted_price) /
+                                    product.price) *
+                                100
+                            )
                             : 0
 
                     return (
@@ -32,8 +81,9 @@ export default function ProductList() {
                             key={product.id}
                             className="w-full max-w-45 flex flex-col font-sans cursor-pointer group mx-auto"
                         >
+
                             <Link to={`/product/${product.slug}`}>
-                                {/* Product Image */}
+
                                 <div
                                     className="
                                         relative
@@ -56,6 +106,7 @@ export default function ProductList() {
                                         group-hover:-translate-y-1
                                     "
                                 >
+
                                     {product.image && (
                                         <img
                                             src={product.image}
@@ -73,40 +124,37 @@ export default function ProductList() {
                                         />
                                     )}
 
-                                    {/* Rating */}
                                     {product.rating_count > 0 && (
-                                    <div
-                                        className="
-                                            absolute
-                                            bottom-2
-                                            left-2
-                                            inline-flex
-                                            items-center
-                                            gap-1
-                                            bg-white/95
-                                            dark:bg-gray-800/95
-                                            backdrop-blur-sm
-                                            px-2
-                                            py-1
-                                            rounded-md
-                                            border
-                                            border-gray-200
-                                            dark:border-gray-700
-                                            shadow-sm
-                                        "
-                                    >
-                                        <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100">
-                                            {product.rating_avg}
-                                        </span>
+                                        <div
+                                            className="
+                                                absolute
+                                                bottom-2
+                                                left-2
+                                                inline-flex
+                                                items-center
+                                                gap-1
+                                                bg-white/95
+                                                dark:bg-gray-800/95
+                                                backdrop-blur-sm
+                                                px-2
+                                                py-1
+                                                rounded-md
+                                                border
+                                                border-gray-200
+                                                dark:border-gray-700
+                                                shadow-sm
+                                            "
+                                        >
+                                            <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100">
+                                                {product.rating_avg}
+                                            </span>
 
-                                        <span className="text-[10px] text-emerald-500">
-                                            ★
-                                        </span>
-                                    </div>
-
+                                            <span className="text-[10px] text-emerald-500">
+                                                ★
+                                            </span>
+                                        </div>
                                     )}
 
-                                    {/* Discount */}
                                     {discount > 0 && (
                                         <div
                                             className="
@@ -125,10 +173,12 @@ export default function ProductList() {
                                             {discount}% OFF
                                         </div>
                                     )}
+
                                 </div>
 
-                                {/* Product Information */}
+
                                 <div className="px-0.5 mt-2">
+
                                     <h3
                                         className="
                                             text-xs
@@ -145,7 +195,9 @@ export default function ProductList() {
                                         {product.name}
                                     </h3>
 
+
                                     <div className="flex items-baseline gap-1.5 mt-1">
+
                                         <span className="text-sm font-bold text-gray-950 dark:text-white">
                                             ₹
                                             {Number(
@@ -153,8 +205,7 @@ export default function ProductList() {
                                             ).toLocaleString("en-IN")}
                                         </span>
 
-                                        {product.price >
-                                            product.discounted_price && (
+                                        {product.price > product.discounted_price && (
                                             <span className="text-[11px] text-gray-400 dark:text-gray-500 line-through">
                                                 ₹
                                                 {Number(
@@ -162,13 +213,42 @@ export default function ProductList() {
                                                 ).toLocaleString("en-IN")}
                                             </span>
                                         )}
+
                                     </div>
+
                                 </div>
+
                             </Link>
+
                         </div>
                     )
                 })}
+
             </div>
+
+
+            {(previousPage || nextPage) && (
+                <div className="flex justify-center items-center gap-4 mt-8">
+
+                    <button
+                        onClick={() => handlePage(previousPage)}
+                        disabled={!previousPage}
+                        className="px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        ← Previous
+                    </button>
+
+                    <button
+                        onClick={() => handlePage(nextPage)}
+                        disabled={!nextPage}
+                        className="px-4 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        Next →
+                    </button>
+
+                </div>
+            )}
+
         </div>
     )
 }

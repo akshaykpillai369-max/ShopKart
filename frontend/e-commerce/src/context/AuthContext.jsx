@@ -12,10 +12,6 @@ export default function AuthProvider({ children }) {
     const [authLoading, setAuthLoading] = useState(true)
     const [profile, setProfile] = useState(null)
 
-    // -----------------------------------
-    // Fetch profile
-    // -----------------------------------
-
     const fetchProfile = async (token) => {
         const response = await axios.get(
             `${API}/api/profile/`,
@@ -30,10 +26,6 @@ export default function AuthProvider({ children }) {
 
         return response.data
     }
-
-    // -----------------------------------
-    // Refresh access token
-    // -----------------------------------
 
     const refreshAccessToken = async () => {
         try {
@@ -58,10 +50,6 @@ export default function AuthProvider({ children }) {
         }
     }
 
-    // -----------------------------------
-    // Restore login when page refreshes
-    // -----------------------------------
-
     useEffect(() => {
         const restoreSession = async () => {
             try {
@@ -78,10 +66,6 @@ export default function AuthProvider({ children }) {
 
         restoreSession()
     }, [])
-
-    // -----------------------------------
-    // Login
-    // -----------------------------------
 
     const login = async (email, password) => {
         const response = await axios.post(
@@ -104,10 +88,6 @@ export default function AuthProvider({ children }) {
         return response
     }
 
-    // -----------------------------------
-    // Google Login
-    // -----------------------------------
-
     const googleLogin = async (credential) => {
         const response = await axios.post(
             `${API}/api/auth/google/`,
@@ -128,10 +108,6 @@ export default function AuthProvider({ children }) {
         return response
     }
 
-    // -----------------------------------
-    // Logout
-    // -----------------------------------
-
     const logout = async () => {
         try {
             await axios.post(
@@ -146,10 +122,6 @@ export default function AuthProvider({ children }) {
             setProfile(null)
         }
     }
-
-    // -----------------------------------
-    // Automatically refresh token
-    // -----------------------------------
 
     useEffect(() => {
         if (!access) {
@@ -169,7 +141,7 @@ export default function AuthProvider({ children }) {
                     )
                 }
             },
-            4 * 60 * 1000
+            4 * 60 *  1000
         )
 
         return () => clearInterval(interval)
@@ -178,7 +150,7 @@ export default function AuthProvider({ children }) {
     const isLoggedIn = !!access
 
     return (
-        <AuthContext.Provider
+        <AuthContext
             value={{
                 access,
                 login,
@@ -191,6 +163,6 @@ export default function AuthProvider({ children }) {
             }}
         >
             {children}
-        </AuthContext.Provider>
+        </AuthContext>
     )
 }

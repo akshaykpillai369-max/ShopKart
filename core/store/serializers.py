@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Profile, CartItem, Order, OrderItem, Review
+from .models import Product,Category, Profile, CartItem, Order, OrderItem, Review
 from django.contrib.auth.models import User
 from django.db.models import Avg
 
@@ -134,3 +134,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'rating', 'description', 'created_at', 'product', 'user']
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'image']

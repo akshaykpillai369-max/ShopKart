@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useCart } from "../context/CartContext"
-import { useProduct } from "../context/productContext"
+import { useProduct } from "../context/ProductContext"
 import { useTheme } from "../context/ThemeContext"
 import SearchBar from "./Search"
 import { useLogin } from "../context/AuthContext"

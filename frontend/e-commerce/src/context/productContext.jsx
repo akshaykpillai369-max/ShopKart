@@ -1,49 +1,187 @@
-// Line 1: Add useContext here!
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import axios from 'axios'
+import {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    useCallback
+} from "react"
 
-//creator of portal
+import axios from "axios"
+
+
 const ProductContext = createContext()
 
 export const useProduct = () => useContext(ProductContext)
 
-//transmitter of portal
+
 export function ProductProvider({ children }) {
 
-    const [products, setProducts] = useState([])
+    const [category, setCategory] = useState([])
     const [loading, setLoading] = useState(false)
-    
+    const [products, setProducts] = useState([])
+    const [nextPage, setNextPage] = useState(null)
+    const [previousPage, setPreviousPage] = useState(null)
+
 
     useEffect(() => {
-    axios.get("http://localhost:8000/api/products/")
-      .then((response) => {
 
-        setProducts(response.data)
-        // setLoading(false)
-      })
-      .catch((err) => console.error("Error fetching products:", err))  
+        axios
+            .get("http://localhost:8000/api/categories/")
+            .then((response) => {
+                setCategory(response.data)
+            })
+            .catch((err) =>
+                console.error(
+                    "Error fetching category:",
+                    err
+                )
+            )
+
     }, [])
 
-     
 
-  
+    const handleSearch = useCallback(
+        (searchterm, categoryName = "") => {
 
-  const handleSearch = useCallback((searchterm) => {  
-      const safeSearchTerm = encodeURIComponent(searchterm);
-      axios.get(`http://localhost:8000/api/products/?search=${safeSearchTerm}`)
-        .then((response) => setProducts(response.data))
-        .catch((err) => console.error("Error fetching products:", err));
-        
-    }, [])
-    
-    
+            const safeSearchTerm =
+                encodeURIComponent(searchterm)
+
+            const safeCategory =
+                encodeURIComponent(categoryName)
+
+
+            let url =
+                `http://localhost:8000/api/products/?search=${safeSearchTerm}`
+
+
+            if (categoryName) {
+
+                url += `&category=${safeCategory}`
+
+            }
+
+
+            axios
+                .get(url)
+                .then((response) => {
+
+                    setProducts(
+                        response.data.results
+                    )
+
+                    setNextPage(
+                        response.data.next
+                    )
+
+                    setPreviousPage(
+                        response.data.previous
+                    )
+
+                })
+                .catch((err) => {
+
+                    console.error(
+                        "Error fetching products:",
+                        err
+                    )
+
+                })
+
+        },
+        []
+    )
+
+
+    const handleCategory = useCallback(
+        (categoryName) => {
+
+            const safeCategory =
+                encodeURIComponent(categoryName)
+
+
+            axios
+                .get(
+                    `http://localhost:8000/api/products/?category=${safeCategory}`
+                )
+                .then((response) => {
+
+                    setProducts(
+                        response.data.results
+                    )
+
+                    setNextPage(
+                        response.data.next
+                    )
+
+                    setPreviousPage(
+                        response.data.previous
+                    )
+
+                })
+                .catch((err) => {
+
+                    console.error(
+                        "Error fetching category products:",
+                        err
+                    )
+
+                })
+
+        },
+        []
+    )
+
+
+    const handlePage = useCallback(
+        async (url) => {
+
+            if (!url) return
+
+            try {
+
+                const response =
+                    await axios.get(url)
+
+                setProducts(
+                    response.data.results
+                )
+
+                setNextPage(
+                    response.data.next
+                )
+
+                setPreviousPage(
+                    response.data.previous
+                )
+
+            } catch (err) {
+
+                console.error(
+                    "Error fetching page:",
+                    err
+                )
+
+            }
+
+        },
+        []
+    )
+
 
     return (
-        <ProductContext value={{products,loading, handleSearch}}>
+        <ProductContext
+            value={{
+                products,
+                category,
+                loading,
+                nextPage,
+                previousPage,
+                handleSearch,
+                handleCategory,
+                handlePage
+            }}
+        >
             {children}
         </ProductContext>
-    );
+    )
 }
-
-
-
