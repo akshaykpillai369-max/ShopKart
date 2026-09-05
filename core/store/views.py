@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from rest_framework.throttling import AnonRateThrottle
+from django.core.cache import cache
 
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -54,9 +55,27 @@ class ProductViewSet(ReadOnlyModelViewSet):
     lookup_field = "slug"
     pagination_class = ProductPagination
 
+    def list(self, request, *args, **kwargs):
+
+        cache_params = self.request.query_params
+        polished_query = f"product_{cache_params.urlencode()}"
+
+        cached_data = cache.get(polished_query)
+
+        if cached_data:
+        
+            return Response(cached_data)
+        
+        response = super().list(request, *args, **kwargs)
+        cache.set(polished_query, response.data, timeout=300)
+        return response
+
     def get_queryset(self):
         queryset = self.queryset
         category = self.request.query_params.get("category")
+
+        
+
 
         if category:
             queryset = queryset.filter(category__name__iexact=category)
