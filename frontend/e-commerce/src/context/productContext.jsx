@@ -26,7 +26,7 @@ export function ProductProvider({ children }) {
     useEffect(() => {
 
         axios
-            .get("http://localhost:8000/api/categories/")
+            .get(`${import.meta.env.VITE_API_URL}/api/categories/`)
             .then((response) => {
                 setCategory(response.data)
             })
@@ -50,8 +50,7 @@ export function ProductProvider({ children }) {
                 encodeURIComponent(categoryName)
 
 
-            let url =
-                `http://localhost:8000/api/products/?search=${safeSearchTerm}`
+            let url = `${import.meta.env.VITE_API_URL}/api/products/?search=${safeSearchTerm}`
 
 
             if (categoryName) {
@@ -101,7 +100,7 @@ export function ProductProvider({ children }) {
 
             axios
                 .get(
-                    `http://localhost:8000/api/products/?category=${safeCategory}`
+                    `${import.meta.env.VITE_API_URL}/api/products/?category=${safeCategory}`
                 )
                 .then((response) => {
 

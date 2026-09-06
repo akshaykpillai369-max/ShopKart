@@ -20,7 +20,7 @@ export default function CartProvider({ children }) {
         const fetchCart = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:8000/api/cart/",
+                    `${import.meta.env.VITE_API_URL}/api/cart/`,
                     {
                         headers: {
                             Authorization: `Bearer ${access}`,

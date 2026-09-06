@@ -34,7 +34,7 @@ export default function OrderDetail() {
         setError("")
 
         axios
-            .get(`http://localhost:8000/api/orders/${id}/`, {
+            .get(`${import.meta.env.VITE_API_URL}/api/orders/${id}/`, {
                 headers: {
                     Authorization: "Bearer " + access,
                 },
@@ -371,7 +371,7 @@ export default function OrderDetail() {
                                                         "http"
                                                     )
                                                         ? item.product.image
-                                                        : `http://localhost:8000${item.product.image}`
+                                                        : `${import.meta.env.VITE_API_URL}${item.product.image}`
                                                 }
                                                 alt={item.product.name}
                                                 className="w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-xl bg-gray-50 dark:bg-gray-50 object-contain"

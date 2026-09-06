@@ -5,7 +5,7 @@ const AuthContext = createContext()
 
 export const useLogin = () => useContext(AuthContext)
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL
 
 export default function AuthProvider({ children }) {
     const [access, setAccess] = useState(null)

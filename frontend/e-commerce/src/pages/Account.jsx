@@ -13,7 +13,7 @@ export default function Account() {
 
     const fetchProfile = () => {
         axios
-            .get("http://127.0.0.1:8000/api/profile/", {
+            .get(`${import.meta.env.VITE_API_URL}/api/profile/`, {
                 headers: {
                     Authorization: "Bearer " + access,
                 },
@@ -47,7 +47,7 @@ export default function Account() {
         setIsSaved()
 
         axios
-            .put("http://127.0.0.1:8000/api/profile/", data, {
+            .put(`${import.meta.env.VITE_API_URL}/api/profile/`, data, {
                 headers: {
                     Authorization: "Bearer " + access,
                 },

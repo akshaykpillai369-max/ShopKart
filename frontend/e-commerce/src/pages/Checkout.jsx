@@ -66,7 +66,7 @@ export default function Checkout() {
         }
 
         axios
-            .get("http://localhost:8000/api/profile/", {
+           .get(`${import.meta.env.VITE_API_URL}/api/profile/`, {
                 headers: {
                     Authorization: "Bearer " + access,
                 },
@@ -115,7 +115,7 @@ export default function Checkout() {
         try {
             // Create Razorpay order through Django
             const response = await axios.post(
-                "http://localhost:8000/api/payment/create/",
+                `${import.meta.env.VITE_API_URL}/api/payment/create/`,
                 {
                     amount: totalCost,
                 },
@@ -166,7 +166,7 @@ export default function Checkout() {
                         )
 
                         const response = await axios.post(
-                            "http://localhost:8000/api/payment/verify/",
+                           `${import.meta.env.VITE_API_URL}/api/payment/verify/`,
                             {
                                 razorpay_order_id:
                                     paymentResponse.razorpay_order_id,

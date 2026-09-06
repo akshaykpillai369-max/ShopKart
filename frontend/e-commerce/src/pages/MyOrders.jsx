@@ -26,7 +26,7 @@ export default function MyOrders() {
         setError("")
 
         axios
-            .get("http://localhost:8000/api/orders/", {
+           .get(`${import.meta.env.VITE_API_URL}/api/orders/`, {
                 headers: {
                     Authorization: "Bearer " + access,
                 },

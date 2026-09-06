@@ -12,7 +12,7 @@ export default function VerifyEmail() {
         const verifyEmail = async () => {
             try {
                 const response = await axios.get(
-                    `http://localhost:8000/api/auth/verify-email/${uid}/${token}/`
+                    `${import.meta.env.VITE_API_URL}/api/auth/verify-email/${uid}/${token}/`
                 )
 
                 setMessage(response.data.message)

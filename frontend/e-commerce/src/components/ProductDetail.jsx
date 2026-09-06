@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { useCart } from "../context/CartContext"
 import { useLogin } from "../context/AuthContext"
 
-const API = "http://localhost:8000"
+const API = import.meta.env.VITE_API_URL
 
 export default function ProductDetail() {
     const { cart, addToCart } = useCart()

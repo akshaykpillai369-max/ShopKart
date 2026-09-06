@@ -76,7 +76,7 @@ export default function LoginForm() {
 
         try {
             const response = await fetch(
-                "http://localhost:8000/api/auth/resend-verification/",
+                `${import.meta.env.VITE_API_URL}/api/auth/resend-verification/`,
                 {
                     method: "POST",
                     headers: {
@@ -184,6 +184,7 @@ export default function LoginForm() {
                 </div>
 
 
+
                 {/* RIGHT SIDE */}
                 <div className="p-6 sm:p-10 lg:p-12">
 
@@ -201,6 +202,7 @@ export default function LoginForm() {
                             </span>
 
                         </div>
+
 
 
                         {/* HEADING */}
@@ -249,6 +251,7 @@ export default function LoginForm() {
                         </div>
 
 
+
                         {/* GOOGLE BUTTON */}
                         <div className="relative w-full h-12 rounded-lg border border-gray-700 bg-gray-800 transition-all duration-200 hover:bg-gray-700 hover:border-gray-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/40 active:translate-y-0 active:shadow-sm">
 
@@ -289,6 +292,7 @@ export default function LoginForm() {
                             </div>
 
 
+
                             {/* INVISIBLE GOOGLE LOGIN */}
                             <div className="absolute inset-0 opacity-0 overflow-hidden">
 
@@ -305,6 +309,7 @@ export default function LoginForm() {
                         </div>
 
 
+
                         {/* DIVIDER */}
                         <div className="flex items-center gap-4 my-7">
 
@@ -319,12 +324,14 @@ export default function LoginForm() {
                         </div>
 
 
+
                         {/* MESSAGE */}
                         {location.state?.message && (
                             <div className="mb-5 rounded-lg border border-green-800 bg-green-900/20 px-4 py-3 text-sm text-green-400">
                                 {location.state.message}
                             </div>
                         )}
+
 
 
                         {/* LOGIN FORM */}
@@ -358,6 +365,7 @@ export default function LoginForm() {
                                 />
 
                             </div>
+
 
 
                             {/* PASSWORD */}
@@ -398,6 +406,7 @@ export default function LoginForm() {
                             </div>
 
 
+
                             {/* LOGIN BUTTON */}
                             <button
                                 type="submit"
@@ -407,6 +416,7 @@ export default function LoginForm() {
                             </button>
 
                         </form>
+
 
 
                         {/* SIGNUP */}
