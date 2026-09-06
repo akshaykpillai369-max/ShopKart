@@ -1,13 +1,8 @@
 import { Link } from "react-router-dom"
 import { useProduct } from "../context/ProductContext"
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-
 
 export default function Categories() {
     const { category, loading } = useProduct()
-
-    
 
     if (loading) {
         return (
@@ -32,37 +27,17 @@ export default function Categories() {
                         to={`/products?category=${encodeURIComponent(item.name)}`}
                         className="group"
                     >
-                        <div className="
-                            bg-white dark:bg-gray-900
-                            border border-gray-200 dark:border-gray-800
-                            rounded-2xl
-                            overflow-hidden
-                            transition-all duration-300
-                            hover:-translate-y-1
-                            hover:shadow-md
-                            hover:border-gray-300 dark:hover:border-gray-700
-                        ">
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700">
                             <div className="h-40 flex items-center justify-center p-6 bg-white">
                                 <img
                                     src={item.image}
                                     alt={item.name}
-                                    className="
-                                        max-h-full max-w-full
-                                        object-contain
-                                        transition-transform duration-300
-                                        group-hover:scale-105
-                                    "
+                                    className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
 
                             <div className="px-4 py-4">
-                                <h2 className="
-                                    text-sm font-semibold
-                                    text-gray-900 dark:text-gray-100
-                                    group-hover:text-blue-600
-                                    dark:group-hover:text-blue-400
-                                    transition-colors
-                                ">
+                                <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                     {item.name}
                                 </h2>
 

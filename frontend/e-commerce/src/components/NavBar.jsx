@@ -27,31 +27,11 @@ export default function Navbar() {
                         to="/"
                         className="flex items-center gap-2.5 shrink-0 group"
                     >
-                        <div
-                            className="
-                                w-9 h-9
-                                rounded-lg
-                                bg-blue-600
-                                group-hover:bg-blue-700
-                                flex items-center justify-center
-                                text-white
-                                font-bold
-                                text-lg
-                                transition-colors
-                            "
-                        >
+                        <div className="w-9 h-9 rounded-lg bg-blue-600 group-hover:bg-blue-700 flex items-center justify-center text-white font-bold text-lg transition-colors">
                             S
                         </div>
 
-                        <span
-                            className="
-                                hidden sm:block
-                                text-lg
-                                font-bold
-                                tracking-tight
-                                text-gray-900 dark:text-white
-                            "
-                        >
+                        <span className="hidden sm:block text-lg font-bold tracking-tight text-gray-900 dark:text-white">
                             ShopKart
                         </span>
                     </Link>
@@ -66,7 +46,6 @@ export default function Navbar() {
                     {/* Right Side */}
                     <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
 
-
                         {/* Account / Login */}
                         {authLoading ? null : isLoggedIn ? (
 
@@ -74,19 +53,7 @@ export default function Navbar() {
 
                                 <button
                                     onClick={() => setAccountOpen(!accountOpen)}
-                                    className="
-                                        w-10 h-10
-                                        rounded-lg
-                                        flex items-center justify-center
-                                        bg-gray-100 dark:bg-gray-800
-                                        text-gray-700 dark:text-gray-200
-                                        hover:bg-gray-200 dark:hover:bg-gray-700
-                                        transition-colors
-                                        focus:outline-none
-                                        focus:ring-2
-                                        focus:ring-gray-300
-                                        dark:focus:ring-gray-600
-                                    "
+                                    className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
                                     title="Account"
                                     aria-label="Account"
                                 >
@@ -110,42 +77,15 @@ export default function Navbar() {
                                 {/* Account Dropdown */}
                                 {accountOpen && (
 
-                                    <div
-                                        className="
-                                            absolute
-                                            right-0
-                                            top-12
-                                            w-56
-                                            bg-white dark:bg-gray-800
-                                            rounded-xl
-                                            shadow-xl
-                                            border
-                                            border-gray-200 dark:border-gray-700
-                                            py-2
-                                            z-50
-                                            overflow-hidden
-                                        "
-                                    >
+                                    <div className="absolute right-0 top-12 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50 overflow-hidden">
 
                                         {/* Account Header */}
-                                        <div className="
-                                            px-4 py-3
-                                            border-b
-                                            border-gray-100 dark:border-gray-700
-                                        ">
-                                            <p className="
-                                                text-sm
-                                                font-semibold
-                                                text-gray-900 dark:text-white
-                                            ">
+                                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                                 My Account
                                             </p>
 
-                                            <p className="
-                                                mt-0.5
-                                                text-xs
-                                                text-gray-500 dark:text-gray-400
-                                            ">
+                                            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                                                 Manage your account
                                             </p>
                                         </div>
@@ -155,14 +95,7 @@ export default function Navbar() {
                                         <Link
                                             to="/account"
                                             onClick={() => setAccountOpen(false)}
-                                            className="
-                                                flex items-center gap-3
-                                                px-4 py-3
-                                                text-sm
-                                                text-gray-700 dark:text-gray-200
-                                                hover:bg-gray-50 dark:hover:bg-gray-700
-                                                transition-colors
-                                            "
+                                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -187,14 +120,7 @@ export default function Navbar() {
                                         <Link
                                             to="/orders"
                                             onClick={() => setAccountOpen(false)}
-                                            className="
-                                                flex items-center gap-3
-                                                px-4 py-3
-                                                text-sm
-                                                text-gray-700 dark:text-gray-200
-                                                hover:bg-gray-50 dark:hover:bg-gray-700
-                                                transition-colors
-                                            "
+                                            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -233,16 +159,7 @@ export default function Navbar() {
                                                 logout()
                                                 setAccountOpen(false)
                                             }}
-                                            className="
-                                                w-full
-                                                flex items-center gap-3
-                                                text-left
-                                                px-4 py-3
-                                                text-sm
-                                                text-red-600 dark:text-red-400
-                                                hover:bg-red-50 dark:hover:bg-red-900/20
-                                                transition-colors
-                                            "
+                                            className="w-full flex items-center gap-3 text-left px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -279,16 +196,7 @@ export default function Navbar() {
                             /* Login */
                             <Link
                                 to="/login"
-                                className="
-                                    px-3.5 md:px-4
-                                    py-2
-                                    rounded-lg
-                                    text-sm
-                                    font-medium
-                                    text-gray-700 dark:text-gray-200
-                                    hover:bg-gray-100 dark:hover:bg-gray-800
-                                    transition-colors
-                                "
+                                className="px-3.5 md:px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                             >
                                 Login
                             </Link>
@@ -299,20 +207,7 @@ export default function Navbar() {
                         {/* Cart */}
                         <Link
                             to="/cart"
-                            className="
-                                relative
-                                w-10 h-10
-                                rounded-lg
-                                flex items-center justify-center
-                                bg-gray-100 dark:bg-gray-800
-                                text-gray-700 dark:text-gray-200
-                                hover:bg-gray-200 dark:hover:bg-gray-700
-                                transition-colors
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-gray-300
-                                dark:focus:ring-gray-600
-                            "
+                            className="relative w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
                             title="Cart"
                             aria-label="Cart"
                         >
@@ -339,23 +234,7 @@ export default function Navbar() {
                             {/* Cart Badge */}
                             {cart.length > 0 && (
 
-                                <span
-                                    className="
-                                        absolute
-                                        -top-1.5
-                                        -right-1.5
-                                        min-w-5 h-5
-                                        px-1
-                                        rounded-full
-                                        bg-red-500
-                                        text-white
-                                        text-[10px]
-                                        font-bold
-                                        flex items-center justify-center
-                                        border-2
-                                        border-white dark:border-gray-900
-                                    "
-                                >
+                                <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-gray-900">
                                     {cart.length}
                                 </span>
 
@@ -367,19 +246,7 @@ export default function Navbar() {
                         {/* Theme Toggle */}
                         <button
                             onClick={toggleTheme}
-                            className="
-                                w-10 h-10
-                                rounded-lg
-                                flex items-center justify-center
-                                bg-gray-100 dark:bg-gray-800
-                                text-gray-700 dark:text-gray-200
-                                hover:bg-gray-200 dark:hover:bg-gray-700
-                                transition-colors
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-gray-300
-                                dark:focus:ring-gray-600
-                            "
+                            className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-600"
                             title="Change theme"
                             aria-label="Change theme"
                         >
@@ -395,6 +262,7 @@ export default function Navbar() {
                                     className="w-5 h-5"
                                 >
                                     <circle cx="12" cy="12" r="4" />
+
                                     <path
                                         strokeLinecap="round"
                                         d="M12 2.5v1.5M12 20v1.5M4.58 4.58l1.06 1.06M18.36 18.36l1.06 1.06M2.5 12H4M20 12h1.5M4.58 19.42l1.06-1.06M18.36 5.64l1.06-1.06"
@@ -431,4 +299,3 @@ export default function Navbar() {
         </nav>
     )
 }
-

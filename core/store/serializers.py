@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Product,Category, Profile, CartItem, Order, OrderItem, Review
 from django.contrib.auth.models import User
 from django.db.models import Avg
+from django.utils import timezone
+from datetime import timedelta
 
 class ProductSerializer(serializers.ModelSerializer):
     display_rating = serializers.ReadOnlyField()
@@ -121,11 +123,35 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
+    status = serializers.SerializerMethodField()
+    expected_delivery = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['id', 'address', 'total_cost', 'status', 'created_at', 'items']
+        fields = ['id', 'address', 'total_cost', 'status', 'created_at','expected_delivery', 'items']
 
+    def get_status(self, obj):
+
+        elapsed = timezone.now() - obj.created_at
+
+        if elapsed < timedelta(hours=3):
+
+            return 'Pending'
+        
+        elif elapsed < timedelta(hours=7):
+
+            return 'Processing'
+
+        elif elapsed < timedelta(days=4):
+
+            return 'Shipped'
+        
+        else:
+            return 'Delivered'
+
+    def get_expected_delivery(self, obj):
+        
+        return obj.created_at + timedelta(days=4)
 
 class ReviewSerializer(serializers.ModelSerializer):
 

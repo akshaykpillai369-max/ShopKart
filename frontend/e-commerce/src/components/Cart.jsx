@@ -51,32 +51,14 @@ export default function Cart() {
 
                         <Link
                             to="/"
-                            className="
-                                px-6 py-2.5
-                                rounded-lg
-                                bg-black dark:bg-white
-                                text-white dark:text-black
-                                text-sm font-medium
-                                hover:opacity-80
-                                transition
-                                text-center
-                            "
+                            className="px-6 py-2.5 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-80 transition text-center"
                         >
                             Continue Shopping
                         </Link>
 
                         <Link
                             to="/orders"
-                            className="
-                                px-6 py-2.5
-                                rounded-lg
-                                border border-gray-200 dark:border-gray-700
-                                text-gray-700 dark:text-gray-200
-                                text-sm font-medium
-                                hover:bg-gray-50 dark:hover:bg-gray-800
-                                transition
-                                text-center
-                            "
+                            className="px-6 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition text-center"
                         >
                             View Orders
                         </Link>
@@ -112,7 +94,7 @@ export default function Cart() {
                     {cart.map((item) => {
 
                         const reachedStockLimit =
-                            item.quantity >= item.stock
+                            item.quantity >= item.stock || item.quantity >= 10
 
                         const remainingStock =
                             item.stock - item.quantity
@@ -120,41 +102,19 @@ export default function Cart() {
                         return (
                             <div
                                 key={item.id}
-                                className="
-                                    bg-white dark:bg-gray-800
-                                    border border-gray-200 dark:border-gray-700
-                                    rounded-xl
-                                    p-4 sm:p-5
-                                    shadow-sm
-                                "
+                                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 sm:p-5 shadow-sm"
                             >
 
                                 {/* Product */}
                                 <div className="flex gap-3 sm:gap-4">
 
                                     {/* Product Image */}
-                                    <div
-                                        className="
-                                            w-20 h-20
-                                            sm:w-28 sm:h-28
-                                            shrink-0
-                                            rounded-lg
-                                            bg-gray-50
-                                            flex items-center justify-center
-                                            overflow-hidden
-                                        "
-                                    >
+                                    <div className="w-20 h-20 sm:w-28 sm:h-28 shrink-0 rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
                                         {item.image && (
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
-                                                className="
-                                                    max-w-full
-                                                    max-h-20
-                                                    sm:max-h-24
-                                                    w-auto
-                                                    object-contain
-                                                "
+                                                className="max-w-full max-h-20 sm:max-h-24 w-auto object-contain"
                                             />
                                         )}
                                     </div>
@@ -166,18 +126,7 @@ export default function Cart() {
                                         {/* Product Name */}
                                         <Link
                                             to={`/product/${item.slug}`}
-                                            className="
-                                                block
-                                                pr-1
-                                                text-sm sm:text-base
-                                                font-medium
-                                                leading-snug
-                                                text-gray-900 dark:text-white
-                                                hover:text-blue-600
-                                                dark:hover:text-blue-400
-                                                transition-colors
-                                                break-words
-                                            "
+                                            className="block pr-1 text-sm sm:text-base font-medium leading-snug text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors wrap-break-words"
                                         >
                                             {item.name}
                                         </Link>
@@ -188,16 +137,7 @@ export default function Cart() {
                                             onClick={() =>
                                                 removeFromCart(item.id)
                                             }
-                                            className="
-                                                mt-2
-                                                text-xs
-                                                font-medium
-                                                text-gray-400
-                                                dark:text-gray-500
-                                                hover:text-red-500
-                                                dark:hover:text-red-400
-                                                transition-colors
-                                            "
+                                            className="mt-2 text-xs font-medium text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                         >
                                             Remove
                                         </button>
@@ -212,43 +152,18 @@ export default function Cart() {
                                         {/* Quantity */}
                                         <div className="flex flex-wrap items-center gap-3 mt-4">
 
-                                            <div
-                                                className="
-                                                    flex items-center
-                                                    border border-gray-200
-                                                    dark:border-gray-600
-                                                    rounded-lg
-                                                    overflow-hidden
-                                                    shrink-0
-                                                "
-                                            >
+                                            <div className="flex items-center border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden shrink-0">
 
                                                 <button
                                                     onClick={() =>
                                                         decreaseQuantity(item.id)
                                                     }
-                                                    className="
-                                                        w-9 h-9
-                                                        flex items-center justify-center
-                                                        text-gray-600
-                                                        dark:text-gray-300
-                                                        hover:bg-gray-100
-                                                        dark:hover:bg-gray-700
-                                                        transition-colors
-                                                    "
+                                                    className="w-9 h-9 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                                 >
                                                     −
                                                 </button>
 
-                                                <span
-                                                    className="
-                                                        w-10
-                                                        text-center
-                                                        text-sm font-medium
-                                                        text-gray-900
-                                                        dark:text-white
-                                                    "
-                                                >
+                                                <span className="w-10 text-center text-sm font-medium text-gray-900 dark:text-white">
                                                     {item.quantity}
                                                 </span>
 
@@ -257,19 +172,7 @@ export default function Cart() {
                                                         increaseQuantity(item.id)
                                                     }
                                                     disabled={reachedStockLimit}
-                                                    className="
-                                                        w-9 h-9
-                                                        flex items-center justify-center
-                                                        text-gray-600
-                                                        dark:text-gray-300
-                                                        hover:bg-gray-100
-                                                        dark:hover:bg-gray-700
-                                                        disabled:opacity-30
-                                                        disabled:cursor-not-allowed
-                                                        disabled:hover:bg-transparent
-                                                        dark:disabled:hover:bg-transparent
-                                                        transition-colors
-                                                    "
+                                                    className="w-9 h-9 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent transition-colors"
                                                 >
                                                     +
                                                 </button>
@@ -279,23 +182,11 @@ export default function Cart() {
 
                                             {/* Stock information */}
                                             {reachedStockLimit ? (
-                                                <span
-                                                    className="
-                                                        text-xs
-                                                        text-orange-600
-                                                        dark:text-orange-400
-                                                    "
-                                                >
+                                                <span className="text-xs text-orange-600 dark:text-orange-400">
                                                     Maximum available
                                                 </span>
                                             ) : item.stock <= 5 ? (
-                                                <span
-                                                    className="
-                                                        text-xs
-                                                        text-gray-500
-                                                        dark:text-gray-400
-                                                    "
-                                                >
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                                     {remainingStock} left
                                                 </span>
                                             ) : null}
@@ -308,15 +199,7 @@ export default function Cart() {
 
 
                                 {/* Item Total */}
-                                <div
-                                    className="
-                                        mt-4
-                                        pt-4
-                                        border-t border-gray-100
-                                        dark:border-gray-700
-                                        flex justify-between items-center
-                                    "
-                                >
+                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                     <span className="text-xs text-gray-500 dark:text-gray-400">
                                         Item total
                                     </span>
@@ -336,16 +219,7 @@ export default function Cart() {
                 {/* Order Summary */}
                 <div className="lg:col-span-1">
 
-                    <div
-                        className="
-                            bg-white dark:bg-gray-800
-                            border border-gray-200 dark:border-gray-700
-                            rounded-xl
-                            p-5
-                            shadow-sm
-                            lg:sticky lg:top-24
-                        "
-                    >
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 shadow-sm lg:sticky lg:top-24">
 
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Order Summary
@@ -376,14 +250,7 @@ export default function Cart() {
                             </div>
 
 
-                            <div
-                                className="
-                                    border-t border-gray-200
-                                    dark:border-gray-700
-                                    pt-4
-                                    flex justify-between
-                                "
-                            >
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4 flex justify-between">
                                 <span className="font-semibold text-gray-900 dark:text-white">
                                     Total
                                 </span>
@@ -396,19 +263,7 @@ export default function Cart() {
 
                             <Link
                                 to="/checkout"
-                                className="
-                                    w-full
-                                    mt-3
-                                    py-3
-                                    rounded-lg
-                                    bg-black dark:bg-white
-                                    text-white dark:text-black
-                                    text-sm font-medium
-                                    hover:opacity-80
-                                    transition
-                                    block
-                                    text-center
-                                "
+                                className="w-full mt-3 py-3 rounded-lg bg-black dark:bg-white text-white dark:text-black text-sm font-medium hover:opacity-80 transition block text-center"
                             >
                                 Proceed to Checkout
                             </Link>
@@ -416,22 +271,7 @@ export default function Cart() {
 
                             <Link
                                 to="/orders"
-                                className="
-                                    w-full
-                                    mt-3
-                                    py-3
-                                    rounded-lg
-                                    border border-gray-200
-                                    dark:border-gray-700
-                                    text-gray-700
-                                    dark:text-gray-200
-                                    text-sm font-medium
-                                    hover:bg-gray-50
-                                    dark:hover:bg-gray-700
-                                    transition
-                                    block
-                                    text-center
-                                "
+                                className="w-full mt-3 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition block text-center"
                             >
                                 View My Orders
                             </Link>
@@ -439,16 +279,7 @@ export default function Cart() {
 
                             <Link
                                 to="/"
-                                className="
-                                    block
-                                    text-center
-                                    text-sm
-                                    text-gray-500
-                                    dark:text-gray-400
-                                    hover:text-gray-900
-                                    dark:hover:text-white
-                                    mt-3
-                                "
+                                className="block text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mt-3"
                             >
                                 Continue Shopping
                             </Link>

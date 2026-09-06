@@ -18,124 +18,125 @@ export default function LoginForm() {
     const [resendLoading, setResendLoading] = useState(false)
 
     useEffect(() => {
-    if (resendMail <= 0) {
-        return
-    }
-
-    const timer = setInterval(() => {
-        setResendMail((previous) => previous - 1)
-    }, 1000)
-
-    return () => clearInterval(timer)
-}, [resendMail])
-
-const handleSubmit = (e) => {
-    e.preventDefault()
-
-    setError("")
-    setNeedsVerification(false)
-
-    login(email, password)
-        .then(() => {
-            navigate("/")
-        })
-        .catch((error) => {
-            console.log("Login failed", error)
-
-            if (
-                error.response?.status === 403 &&
-                error.response?.data?.error ===
-                    "Please verify your email before logging in."
-            ) {
-                setError(error.response.data.error)
-                setNeedsVerification(true)
-                return
-            }
-
-            if (error.response?.data?.detail) {
-                setError(error.response.data.detail)
-                return
-            }
-
-            if (error.response?.data?.error) {
-                setError(error.response.data.error)
-                return
-            }
-
-            setError("Invalid email or password.")
-        })
-}
-
-const handleResendVerification = async () => {
-    if (resendMail > 0 || resendLoading) {
-        return
-    }
-
-    setResendLoading(true)
-    setError("")
-
-    try {
-        const response = await fetch(
-            "http://localhost:8000/api/auth/resend-verification/",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: email,
-                }),
-            }
-        )
-
-        const data = await response.json()
-
-        if (!response.ok) {
-            throw {
-                response: {
-                    status: response.status,
-                    data: data,
-                },
-            }
+        if (resendMail <= 0) {
+            return
         }
 
-        setError(data.message)
-        setResendMail(60)
+        const timer = setInterval(() => {
+            setResendMail((previous) => previous - 1)
+        }, 1000)
 
-    } catch (error) {
-        console.log("Resend verification failed", error)
+        return () => clearInterval(timer)
+    }, [resendMail])
 
-        if (error.response?.status === 429) {
-            setError(
-                "Please wait before requesting another verification email."
-            )
-        } else {
-            setError(
-                error.response?.data?.error ||
-                "Unable to resend verification email."
-            )
+    const handleSubmit = (e) => {
+        e.preventDefault()
+
+        setError("")
+        setNeedsVerification(false)
+
+        login(email, password)
+            .then(() => {
+                navigate("/")
+            })
+            .catch((error) => {
+                console.log("Login failed", error)
+
+                if (
+                    error.response?.status === 403 &&
+                    error.response?.data?.error ===
+                        "Please verify your email before logging in."
+                ) {
+                    setError(error.response.data.error)
+                    setNeedsVerification(true)
+                    return
+                }
+
+                if (error.response?.data?.detail) {
+                    setError(error.response.data.detail)
+                    return
+                }
+
+                if (error.response?.data?.error) {
+                    setError(error.response.data.error)
+                    return
+                }
+
+                setError("Invalid email or password.")
+            })
+    }
+
+    const handleResendVerification = async () => {
+        if (resendMail > 0 || resendLoading) {
+            return
         }
 
-    } finally {
-        setResendLoading(false)
-    }
-}
-const handleGoogleSuccess = (credentialResponse) => {
-    setError("")
+        setResendLoading(true)
+        setError("")
 
-    googleLogin(credentialResponse.credential)
-        .then(() => {
-            navigate("/")
-        })
-        .catch((error) => {
-            console.log("Google login failed", error)
-
-            setError(
-                error.response?.data?.error ||
-                "Google login failed. Please try again."
+        try {
+            const response = await fetch(
+                "http://localhost:8000/api/auth/resend-verification/",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                    }),
+                }
             )
-        })
-}
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw {
+                    response: {
+                        status: response.status,
+                        data: data,
+                    },
+                }
+            }
+
+            setError(data.message)
+            setResendMail(60)
+
+        } catch (error) {
+            console.log("Resend verification failed", error)
+
+            if (error.response?.status === 429) {
+                setError(
+                    "Please wait before requesting another verification email."
+                )
+            } else {
+                setError(
+                    error.response?.data?.error ||
+                    "Unable to resend verification email."
+                )
+            }
+
+        } finally {
+            setResendLoading(false)
+        }
+    }
+
+    const handleGoogleSuccess = (credentialResponse) => {
+        setError("")
+
+        googleLogin(credentialResponse.credential)
+            .then(() => {
+                navigate("/")
+            })
+            .catch((error) => {
+                console.log("Google login failed", error)
+
+                setError(
+                    error.response?.data?.error ||
+                    "Google login failed. Please try again."
+                )
+            })
+    }
 
     return (
         <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-10">
@@ -182,6 +183,7 @@ const handleGoogleSuccess = (credentialResponse) => {
 
                 </div>
 
+
                 {/* RIGHT SIDE */}
                 <div className="p-6 sm:p-10 lg:p-12">
 
@@ -199,6 +201,7 @@ const handleGoogleSuccess = (credentialResponse) => {
                             </span>
 
                         </div>
+
 
                         {/* HEADING */}
                         <div className="mb-3">
@@ -223,65 +226,34 @@ const handleGoogleSuccess = (credentialResponse) => {
                                                     You can request another verification email in{" "}
                                                     <span className="font-semibold text-white">
                                                         {resendMail}s
-                                    </span>
-                                </p>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleResendVerification}
-                                    disabled={resendLoading}
-                                    className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50"
-                                >
-                                    {resendLoading
-                                        ? "Sending..."
-                                        : "Resend verification email"}
-                                </button>
-                                                )}
+                                                    </span>
+                                                </p>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleResendVerification}
+                                                    disabled={resendLoading}
+                                                    className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-50"
+                                                >
+                                                    {resendLoading
+                                                        ? "Sending..."
+                                                        : "Resend verification email"}
+                                                </button>
+                                            )}
 
+                                        </div>
+                                    )}
                                 </div>
                             )}
-                        </div>
-                    )}
 
                         </div>
+
 
                         {/* GOOGLE BUTTON */}
-                        <div
-                            className="
-                                relative
-                                w-full
-                                h-12
-                                rounded-lg
-                                border
-                                border-gray-700
-                                bg-gray-800
-                                transition-all
-                                duration-200
-                                hover:bg-gray-700
-                                hover:border-gray-600
-                                hover:-translate-y-0.5
-                                hover:shadow-lg
-                                hover:shadow-gray-950/40
-                                active:translate-y-0
-                                active:shadow-sm
-                            "
-                        >
+                        <div className="relative w-full h-12 rounded-lg border border-gray-700 bg-gray-800 transition-all duration-200 hover:bg-gray-700 hover:border-gray-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/40 active:translate-y-0 active:shadow-sm">
 
                             {/* VISUAL BUTTON */}
-                            <div
-                                className="
-                                    absolute
-                                    inset-0
-                                    flex
-                                    items-center
-                                    justify-center
-                                    gap-3
-                                    text-sm
-                                    font-medium
-                                    text-white
-                                    pointer-events-none
-                                "
-                            >
+                            <div className="absolute inset-0 flex items-center justify-center gap-3 text-sm font-medium text-white pointer-events-none">
 
                                 {/* GOOGLE ICON */}
                                 <svg
@@ -316,15 +288,9 @@ const handleGoogleSuccess = (credentialResponse) => {
 
                             </div>
 
+
                             {/* INVISIBLE GOOGLE LOGIN */}
-                            <div
-                                className="
-                                    absolute
-                                    inset-0
-                                    opacity-0
-                                    overflow-hidden
-                                "
-                            >
+                            <div className="absolute inset-0 opacity-0 overflow-hidden">
 
                                 <GoogleLogin
                                     width="100%"
@@ -337,6 +303,7 @@ const handleGoogleSuccess = (credentialResponse) => {
                             </div>
 
                         </div>
+
 
                         {/* DIVIDER */}
                         <div className="flex items-center gap-4 my-7">
@@ -351,12 +318,14 @@ const handleGoogleSuccess = (credentialResponse) => {
 
                         </div>
 
+
                         {/* MESSAGE */}
                         {location.state?.message && (
                             <div className="mb-5 rounded-lg border border-green-800 bg-green-900/20 px-4 py-3 text-sm text-green-400">
                                 {location.state.message}
                             </div>
                         )}
+
 
                         {/* LOGIN FORM */}
                         <form
@@ -389,6 +358,7 @@ const handleGoogleSuccess = (credentialResponse) => {
                                 />
 
                             </div>
+
 
                             {/* PASSWORD */}
                             <div>
@@ -427,38 +397,17 @@ const handleGoogleSuccess = (credentialResponse) => {
 
                             </div>
 
+
                             {/* LOGIN BUTTON */}
                             <button
                                 type="submit"
-                                className="
-                                    w-full
-                                    rounded-lg
-                                    bg-blue-600
-                                    py-3
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    shadow-lg
-                                    shadow-blue-600/20
-                                    transition-all
-                                    duration-200
-                                    hover:bg-blue-700
-                                    hover:-translate-y-0.5
-                                    hover:shadow-blue-600/30
-                                    active:translate-y-0
-                                    active:shadow-lg
-                                    focus:outline-none
-                                    focus:ring-2
-                                    focus:ring-blue-500
-                                    focus:ring-offset-2
-                                    focus:ring-offset-gray-900
-                                "
+                                className="w-full rounded-lg bg-blue-600 py-3 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-600/30 active:translate-y-0 active:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                             >
                                 Sign in
                             </button>
 
                         </form>
+
 
                         {/* SIGNUP */}
                         <p className="mt-7 text-center text-sm text-gray-400">

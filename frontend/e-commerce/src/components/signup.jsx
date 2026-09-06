@@ -17,55 +17,55 @@ export default function SignUpForm() {
     const passwordMismatch =
         password2.length > 0 && password !== password2
 
-const handleSubmit = async (e) => {
-    e.preventDefault()
+    const handleSubmit = async (e) => {
+        e.preventDefault()
 
-    setLoading(true)
-    setError("")
+        setLoading(true)
+        setError("")
 
-    try {
-        const response = await axios.post(
-            "http://localhost:8000/api/auth/signup/",
-            {
-                email,
-                password,
-                password2,
-            }
-        )
+        try {
+            const response = await axios.post(
+                "http://localhost:8000/api/auth/signup/",
+                {
+                    email,
+                    password,
+                    password2,
+                }
+            )
 
-        navigate("/login", {
-            state: {
-                message: response.data.message,
-            },
-        })
+            navigate("/login", {
+                state: {
+                    message: response.data.message,
+                },
+            })
 
-    } catch (error) {
-        console.log("Signup failed:", error)
+        } catch (error) {
+            console.log("Signup failed:", error)
 
-        const backendError = error.response?.data
+            const backendError = error.response?.data
 
-        if (backendError) {
-            if (typeof backendError === "string") {
-                setError(backendError)
+            if (backendError) {
+                if (typeof backendError === "string") {
+                    setError(backendError)
+                } else {
+                    const messages = Object.values(backendError)
+                        .flat()
+                        .join(" ")
+
+                    setError(
+                        messages ||
+                        "You may have missed some fields. Please fill them and try again."
+                    )
+                }
             } else {
-                const messages = Object.values(backendError)
-                    .flat()
-                    .join(" ")
-
                 setError(
-                    messages ||
                     "You may have missed some fields. Please fill them and try again."
                 )
             }
-        } else {
-            setError(
-                "You may have missed some fields. Please fill them and try again."
-            )
+        } finally {
+            setLoading(false)
         }
-    } finally {
-        setLoading(false)
     }
-}
 
     const handleGoogleSuccess = (credentialResponse) => {
         googleLogin(credentialResponse.credential)
@@ -155,42 +155,10 @@ const handleSubmit = async (e) => {
                         </div>
 
                         {/* GOOGLE BUTTON */}
-                        <div
-                            className="
-                                relative
-                                w-full
-                                h-12
-                                rounded-lg
-                                border
-                                border-gray-700
-                                bg-gray-800
-                                transition-all
-                                duration-200
-                                hover:bg-gray-700
-                                hover:border-gray-600
-                                hover:-translate-y-0.5
-                                hover:shadow-lg
-                                hover:shadow-gray-950/40
-                                active:translate-y-0
-                                active:shadow-sm
-                            "
-                        >
+                        <div className="relative w-full h-12 rounded-lg border border-gray-700 bg-gray-800 transition-all duration-200 hover:bg-gray-700 hover:border-gray-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/40 active:translate-y-0 active:shadow-sm">
 
                             {/* VISUAL BUTTON */}
-                            <div
-                                className="
-                                    absolute
-                                    inset-0
-                                    flex
-                                    items-center
-                                    justify-center
-                                    gap-3
-                                    text-sm
-                                    font-medium
-                                    text-white
-                                    pointer-events-none
-                                "
-                            >
+                            <div className="absolute inset-0 flex items-center justify-center gap-3 text-sm font-medium text-white pointer-events-none">
 
                                 {/* GOOGLE ICON */}
                                 <svg
@@ -226,14 +194,7 @@ const handleSubmit = async (e) => {
                             </div>
 
                             {/* INVISIBLE GOOGLE LOGIN */}
-                            <div
-                                className="
-                                    absolute
-                                    inset-0
-                                    opacity-0
-                                    overflow-hidden
-                                "
-                            >
+                            <div className="absolute inset-0 opacity-0 overflow-hidden">
 
                                 <GoogleLogin
                                     width="100%"
@@ -269,10 +230,7 @@ const handleSubmit = async (e) => {
                         )}
 
                         {/* SIGNUP FORM */}
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-5"
-                        >
+                        <form onSubmit={handleSubmit} className="space-y-5">
 
                             {/* EMAIL */}
                             <div>
@@ -370,12 +328,11 @@ const handleSubmit = async (e) => {
                                     htmlFor="terms"
                                     className="text-sm text-gray-400 leading-relaxed"
                                 >
-                                    I agree to the{" "}
+                                    I agree to{" "}
 
                                     <a
                                         href="/terms-and-conditions"
                                         className="text-blue-400 hover:text-blue-300 hover:underline"
-                                
                                     >
                                         Terms and Conditions
                                     </a>{" "}
@@ -396,31 +353,11 @@ const handleSubmit = async (e) => {
                             <button
                                 type="submit"
                                 disabled={passwordMismatch || loading}
-                                className="
-                                    w-full
-                                    rounded-lg
-                                    bg-blue-600
-                                    py-3
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    shadow-lg
-                                    shadow-blue-600/20
-                                    transition-all
-                                    duration-200
-                                    hover:bg-blue-700
-                                    hover:-translate-y-0.5
-                                    hover:shadow-blue-600/30
-                                    active:translate-y-0
-                                    disabled:bg-gray-600
-                                    disabled:text-gray-400
-                                    disabled:shadow-none
-                                    disabled:cursor-not-allowed
-                                    disabled:translate-y-0
-                                "
+                                className="w-full rounded-lg bg-blue-600 py-3 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-600/30 active:translate-y-0 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:translate-y-0"
                             >
-                                {loading ? "Creating account..." : "Create account"}
+                                {loading
+                                    ? "Creating account..."
+                                    : "Create account"}
                             </button>
 
                         </form>

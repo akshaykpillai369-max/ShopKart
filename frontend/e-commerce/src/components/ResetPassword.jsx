@@ -146,25 +146,31 @@ export default function ResetPassword() {
                         {/* SUCCESS */}
                         {success && (
                             <div className="mb-5 rounded-lg border border-green-800 bg-green-900/20 px-4 py-3 text-sm text-green-400">
+
                                 <div className="flex items-start gap-3">
 
                                     <div className="mt-0.5 w-5 h-5 rounded-full bg-green-500/15 flex items-center justify-center shrink-0">
+
                                         <svg
                                             className="w-3.5 h-3.5 text-green-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
                                         >
+
                                             <path
                                                 strokeLinecap="round"
                                                 strokeLinejoin="round"
                                                 strokeWidth="2"
                                                 d="M5 13l4 4L19 7"
                                             />
+
                                         </svg>
+
                                     </div>
 
                                     <div>
+
                                         <p className="font-medium">
                                             {success}
                                         </p>
@@ -172,17 +178,16 @@ export default function ResetPassword() {
                                         <p className="mt-1 text-xs text-green-500">
                                             Redirecting you to login...
                                         </p>
+
                                     </div>
 
                                 </div>
+
                             </div>
                         )}
 
                         {/* FORM */}
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-5"
-                        >
+                        <form onSubmit={handleSubmit} className="space-y-5">
 
                             {/* NEW PASSWORD */}
                             <div>
@@ -265,28 +270,7 @@ export default function ResetPassword() {
                             <button
                                 type="submit"
                                 disabled={loading || !passwordsMatch}
-                                className="
-                                    w-full
-                                    rounded-lg
-                                    bg-blue-600
-                                    py-3
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    shadow-lg
-                                    shadow-blue-600/20
-                                    transition-all
-                                    duration-200
-                                    hover:bg-blue-700
-                                    hover:-translate-y-0.5
-                                    hover:shadow-blue-600/30
-                                    active:translate-y-0
-                                    active:shadow-lg
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-60
-                                    disabled:hover:translate-y-0
-                                "
+                                className="w-full rounded-lg bg-blue-600 py-3 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-600/30 active:translate-y-0 active:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                             >
                                 {loading ? "Resetting..." : "Reset password"}
                             </button>

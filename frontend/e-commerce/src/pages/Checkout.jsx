@@ -16,6 +16,18 @@ export default function Checkout() {
     const [placingOrder, setPlacingOrder] = useState(false)
     const [error, setError] = useState("")
 
+    const expectedDelivery = new Date()
+
+    expectedDelivery.setDate(expectedDelivery.getDate() + 4)
+
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
+    }
+
     // Buy Now data
     const buyNowProduct = location.state?.product
     const buyNowQuantity = location.state?.quantity || 1
@@ -83,16 +95,12 @@ export default function Checkout() {
         }
 
         if (!address.trim()) {
-            setError(
-                "Please add a delivery address before placing your order."
-            )
+            setError("Please add a delivery address before placing your order.")
             return
         }
 
         if (!window.Razorpay) {
-            setError(
-                "Payment system is still loading. Please try again."
-            )
+            setError("Payment system is still loading. Please try again.")
             return
         }
 
@@ -122,8 +130,6 @@ export default function Checkout() {
 
             console.log("Razorpay order response:", data)
 
-          
-
             if (!data.order_id) {
                 throw new Error("Razorpay order ID was not returned.")
             }
@@ -134,7 +140,6 @@ export default function Checkout() {
 
             const options = {
                 key: data.key,
-
                 amount: data.amount,
                 currency: data.currency || "INR",
 
@@ -153,7 +158,6 @@ export default function Checkout() {
                     address: address,
                 },
 
-
                 handler: async function (paymentResponse) {
                     try {
                         console.log(
@@ -164,9 +168,12 @@ export default function Checkout() {
                         const response = await axios.post(
                             "http://localhost:8000/api/payment/verify/",
                             {
-                                razorpay_order_id: paymentResponse.razorpay_order_id,
-                                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                                razorpay_signature: paymentResponse.razorpay_signature,
+                                razorpay_order_id:
+                                    paymentResponse.razorpay_order_id,
+                                razorpay_payment_id:
+                                    paymentResponse.razorpay_payment_id,
+                                razorpay_signature:
+                                    paymentResponse.razorpay_signature,
 
                                 address: address,
 
@@ -184,9 +191,8 @@ export default function Checkout() {
 
                         console.log("Order created:", response.data)
 
-                        clearCart('')
+                        clearCart("")
                         navigate("/order-success")
-
                     } catch (verifyError) {
                         console.error(
                             "Payment verification error:",
@@ -234,6 +240,7 @@ export default function Checkout() {
             razorpay.open()
         } catch (paymentError) {
             console.error("Payment error:", paymentError)
+
             console.error(
                 "Backend response:",
                 paymentError.response?.data
@@ -295,24 +302,13 @@ export default function Checkout() {
                     </h2>
 
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        Add some products to your cart before
-                        proceeding to checkout.
+                        Add some products to your cart before proceeding to
+                        checkout.
                     </p>
 
                     <Link
                         to="/"
-                        className="
-                            inline-flex items-center justify-center
-                            mt-6
-                            px-6 py-3
-                            rounded-lg
-                            bg-gray-900 hover:bg-gray-800
-                            dark:bg-white dark:hover:bg-gray-200
-                            dark:text-gray-900
-                            text-white
-                            text-sm font-medium
-                            transition-colors
-                        "
+                        className="inline-flex items-center justify-center mt-6 px-6 py-3 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white text-sm font-medium transition-colors"
                     >
                         Continue Shopping
                     </Link>
@@ -355,15 +351,7 @@ export default function Checkout() {
                 <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-5 sm:gap-6 lg:gap-8">
 
                     {/* Delivery Address */}
-                    <section
-                        className="
-                            bg-white dark:bg-gray-900
-                            border border-gray-200 dark:border-gray-800
-                            rounded-2xl
-                            p-5 sm:p-6 md:p-7
-                            shadow-sm
-                        "
-                    >
+                    <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 sm:p-6 md:p-7 shadow-sm">
                         <div className="flex items-start justify-between gap-4 mb-5 sm:mb-6">
                             <div>
                                 <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
@@ -377,26 +365,14 @@ export default function Checkout() {
 
                             <Link
                                 to="/account"
-                                className="
-                                    shrink-0
-                                    text-sm font-medium
-                                    text-blue-600 dark:text-blue-400
-                                    hover:underline
-                                "
+                                className="shrink-0 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                             >
                                 {address.trim() ? "Edit" : "Add"}
                             </Link>
                         </div>
 
                         {address.trim() ? (
-                            <div
-                                className="
-                                    rounded-xl
-                                    border border-gray-200 dark:border-gray-700
-                                    bg-gray-50 dark:bg-gray-800/60
-                                    p-4 sm:p-5
-                                "
-                            >
+                            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4 sm:p-5">
                                 <div className="flex items-center gap-2 mb-3">
                                     <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
 
@@ -405,28 +381,12 @@ export default function Checkout() {
                                     </span>
                                 </div>
 
-                                <p
-                                    className="
-                                        text-sm
-                                        leading-6
-                                        text-gray-700 dark:text-gray-300
-                                        whitespace-pre-line
-                                        wrap-break-words
-                                    "
-                                >
+                                <p className="text-sm leading-6 text-gray-700 dark:text-gray-300 whitespace-pre-line wrap-break-words">
                                     {address}
                                 </p>
                             </div>
                         ) : (
-                            <div
-                                className="
-                                    rounded-xl
-                                    border border-dashed
-                                    border-red-300 dark:border-red-800
-                                    bg-red-50/50 dark:bg-red-900/10
-                                    p-4 sm:p-5
-                                "
-                            >
+                            <div className="rounded-xl border border-dashed border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10 p-4 sm:p-5">
                                 <p className="font-medium text-sm text-red-700 dark:text-red-400">
                                     No delivery address added
                                 </p>
@@ -437,18 +397,7 @@ export default function Checkout() {
 
                                 <Link
                                     to="/account"
-                                    className="
-                                        inline-flex
-                                        mt-4
-                                        px-4 py-2
-                                        rounded-lg
-                                        bg-gray-900 hover:bg-gray-800
-                                        dark:bg-white dark:hover:bg-gray-200
-                                        dark:text-gray-900
-                                        text-white
-                                        text-sm font-medium
-                                        transition-colors
-                                    "
+                                    className="inline-flex mt-4 px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 dark:text-gray-900 text-white text-sm font-medium transition-colors"
                                 >
                                     Add Address
                                 </Link>
@@ -464,15 +413,7 @@ export default function Checkout() {
                     </section>
 
                     {/* Order Summary */}
-                    <section
-                        className="
-                            bg-white dark:bg-gray-900
-                            border border-gray-200 dark:border-gray-800
-                            rounded-2xl
-                            p-5 sm:p-6 md:p-7
-                            shadow-sm
-                        "
-                    >
+                    <section className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 sm:p-6 md:p-7 shadow-sm">
                         <div className="mb-5 sm:mb-6">
                             <p className="text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1">
                                 Step 2
@@ -491,18 +432,7 @@ export default function Checkout() {
                                     className="flex items-start gap-3 sm:gap-4 min-w-0"
                                 >
                                     {/* Product Image */}
-                                    <div
-                                        className="
-                                            w-16 h-16
-                                            shrink-0
-                                            rounded-xl
-                                            bg-white
-                                            border border-gray-100
-                                            p-2
-                                            flex items-center justify-center
-                                            overflow-hidden
-                                        "
-                                    >
+                                    <div className="w-16 h-16 shrink-0 rounded-xl bg-white border border-gray-100 p-2 flex items-center justify-center overflow-hidden">
                                         <img
                                             src={item.image}
                                             alt={item.name}
@@ -512,16 +442,7 @@ export default function Checkout() {
 
                                     {/* Product Details */}
                                     <div className="min-w-0 flex-1">
-                                        <p
-                                            className="
-                                                font-medium
-                                                text-sm
-                                                leading-5
-                                                text-gray-900 dark:text-white
-                                                wrap-break-words
-                                                line-clamp-2
-                                            "
-                                        >
+                                        <p className="font-medium text-sm leading-5 text-gray-900 dark:text-white wrap-break-words line-clamp-2">
                                             {item.name}
                                         </p>
 
@@ -532,17 +453,8 @@ export default function Checkout() {
                                     </div>
 
                                     {/* Item Total */}
-                                    <p
-                                        className="
-                                            shrink-0
-                                            font-medium
-                                            text-sm
-                                            text-gray-900 dark:text-white
-                                            whitespace-nowrap
-                                        "
-                                    >
-                                        ₹
-                                        {Number(item.discounted_price) *
+                                    <p className="shrink-0 font-medium text-sm text-gray-900 dark:text-white whitespace-nowrap">
+                                        ₹{Number(item.discounted_price) *
                                             item.quantity}
                                     </p>
                                 </div>
@@ -550,13 +462,11 @@ export default function Checkout() {
                         </div>
 
                         {/* Total */}
-                        <div
-                            className="
-                                mt-6 sm:mt-7
-                                pt-5
-                                border-t border-gray-200 dark:border-gray-800
-                            "
-                        >
+                        <div className="mt-6 sm:mt-7 pt-5 border-t border-gray-200 dark:border-gray-800">
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                Expected delivery: {formatDate(expectedDelivery)}
+                            </span>
+
                             <div className="flex items-center justify-between gap-4">
                                 <span className="text-sm text-gray-500 dark:text-gray-400">
                                     Total
@@ -571,40 +481,12 @@ export default function Checkout() {
                         {/* Pay Now */}
                         <button
                             onClick={handlePlaceOrder}
-                            disabled={
-                                placingOrder ||
-                                !address.trim()
-                            }
-                            className="
-                                w-full
-                                mt-6
-                                h-12
-                                rounded-xl
-                                bg-orange-500
-                                hover:bg-orange-600
-                                disabled:bg-gray-300
-                                dark:disabled:bg-gray-700
-                                disabled:text-gray-500
-                                dark:disabled:text-gray-500
-                                text-white
-                                font-semibold
-                                text-sm
-                                transition-colors
-                                disabled:cursor-not-allowed
-                            "
+                            disabled={placingOrder || !address.trim()}
+                            className="w-full mt-6 h-12 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-500 text-white font-semibold text-sm transition-colors disabled:cursor-not-allowed"
                         >
                             {placingOrder ? (
                                 <span className="inline-flex items-center justify-center gap-2">
-                                    <span
-                                        className="
-                                            w-4 h-4
-                                            border-2
-                                            border-white/40
-                                            border-t-white
-                                            rounded-full
-                                            animate-spin
-                                        "
-                                    />
+                                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
 
                                     Processing...
                                 </span>
@@ -613,15 +495,7 @@ export default function Checkout() {
                             )}
                         </button>
 
-                        <p
-                            className="
-                                mt-3
-                                text-center
-                                text-xs
-                                leading-5
-                                text-gray-400 dark:text-gray-500
-                            "
-                        >
+                        <p className="mt-3 text-center text-xs leading-5 text-gray-400 dark:text-gray-500">
                             Secure payment powered by Razorpay.
                         </p>
                     </section>

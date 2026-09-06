@@ -67,6 +67,7 @@ export default function VerifyEmail() {
                                 <div className="absolute inset-2 rounded-full border-4 border-gray-800 border-t-blue-500 animate-spin" />
 
                                 <div className="absolute inset-0 flex items-center justify-center">
+
                                     <svg
                                         className="w-7 h-7 text-blue-400"
                                         fill="none"
@@ -80,6 +81,7 @@ export default function VerifyEmail() {
                                             d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                         />
                                     </svg>
+
                                 </div>
 
                             </div>
@@ -160,6 +162,7 @@ export default function VerifyEmail() {
                                     </svg>
 
                                     <div>
+
                                         <p className="text-sm font-medium text-green-300">
                                             Your account is ready
                                         </p>
@@ -167,6 +170,7 @@ export default function VerifyEmail() {
                                         <p className="mt-1 text-xs leading-relaxed text-green-400/70">
                                             You can now sign in and start shopping.
                                         </p>
+
                                     </div>
 
                                 </div>
@@ -175,26 +179,7 @@ export default function VerifyEmail() {
 
                             <Link
                                 to="/login"
-                                className="
-                                    flex items-center justify-center gap-2
-                                    w-full
-                                    mt-7
-                                    rounded-xl
-                                    bg-blue-600
-                                    py-3.5
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    shadow-lg
-                                    shadow-blue-600/20
-                                    transition-all
-                                    duration-200
-                                    hover:bg-blue-700
-                                    hover:-translate-y-0.5
-                                    hover:shadow-blue-600/30
-                                    active:translate-y-0
-                                "
+                                className="flex items-center justify-center gap-2 w-full mt-7 rounded-xl bg-blue-600 py-3.5 px-4 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-600/30 active:translate-y-0"
                             >
                                 Continue to login
 
@@ -263,23 +248,7 @@ export default function VerifyEmail() {
 
                             <Link
                                 to="/login"
-                                className="
-                                    flex items-center justify-center gap-2
-                                    w-full
-                                    mt-7
-                                    rounded-xl
-                                    bg-gray-800
-                                    border border-gray-700
-                                    py-3.5
-                                    px-4
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    transition-all
-                                    duration-200
-                                    hover:bg-gray-700
-                                    hover:border-gray-600
-                                "
+                                className="flex items-center justify-center gap-2 w-full mt-7 rounded-xl bg-gray-800 border border-gray-700 py-3.5 px-4 text-sm font-semibold text-white transition-all duration-200 hover:bg-gray-700 hover:border-gray-600"
                             >
                                 Back to login
 

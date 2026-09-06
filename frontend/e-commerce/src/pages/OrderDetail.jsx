@@ -12,6 +12,14 @@ export default function OrderDetail() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
 
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        })
+    }
+
     useEffect(() => {
         if (authLoading) {
             return
@@ -78,21 +86,7 @@ export default function OrderDetail() {
 
                     <Link
                         to="/orders"
-                        className="
-                            inline-flex
-                            mt-6
-                            px-5 py-2.5
-                            rounded-lg
-                            bg-gray-900
-                            hover:bg-gray-800
-                            dark:bg-white
-                            dark:hover:bg-gray-200
-                            text-white
-                            dark:text-gray-900
-                            text-sm
-                            font-medium
-                            transition-colors
-                        "
+                        className="inline-flex mt-6 px-5 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-sm font-medium transition-colors"
                     >
                         Back to Orders
                     </Link>
@@ -227,20 +221,11 @@ export default function OrderDetail() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             <div className="max-w-5xl mx-auto px-4 py-6 md:px-8 md:py-10">
-
                 {/* Header */}
                 <div className="mb-8">
                     <Link
                         to="/orders"
-                        className="
-                            inline-flex items-center gap-2
-                            text-sm
-                            text-gray-500
-                            dark:text-gray-400
-                            hover:text-gray-900
-                            dark:hover:text-white
-                            transition-colors
-                        "
+                        className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                         ← Back to Orders
                     </Link>
@@ -258,18 +243,26 @@ export default function OrderDetail() {
                             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 Placed on {orderDate}
                             </p>
+
+                            {order.status !== "Delivered" ? (
+                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    Expected delivery:{" "}
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        {formatDate(order.expected_delivery)}
+                                    </span>
+                                </p>
+                            ) : (
+                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    Delivered on:{" "}
+                                    <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        {formatDate(order.expected_delivery)}
+                                    </span>
+                                </p>
+                            )}
                         </div>
 
                         <span
-                            className={`
-                                inline-flex
-                                w-fit
-                                px-3 py-1.5
-                                rounded-full
-                                text-sm
-                                font-medium
-                                ${getStatusStyle(order.status)}
-                            `}
+                            className={`inline-flex w-fit px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(order.status)}`}
                         >
                             {order.status}
                         </span>
@@ -277,18 +270,7 @@ export default function OrderDetail() {
                 </div>
 
                 {/* Delivery Tracker */}
-                <section
-                    className="
-                        mb-6
-                        bg-white
-                        dark:bg-gray-800
-                        rounded-2xl
-                        border
-                        border-gray-100
-                        dark:border-gray-700
-                        p-5 md:p-6
-                    "
-                >
+                <section className="mb-6 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 md:p-6">
                     <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                         Delivery Status
                     </h2>
@@ -307,18 +289,11 @@ export default function OrderDetail() {
                                 >
                                     <div className="flex flex-col items-center min-w-0">
                                         <div
-                                            className={`
-                                                w-10 h-10
-                                                rounded-full
-                                                flex items-center justify-center
-                                                border-2
-                                                transition-colors
-                                                ${
-                                                    completed
-                                                        ? "bg-blue-600 border-blue-600 text-white"
-                                                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
-                                                }
-                                            `}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors ${
+                                                completed
+                                                    ? "bg-blue-600 border-blue-600 text-white"
+                                                    : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500"
+                                            }`}
                                         >
                                             {completed && !isCurrent ? (
                                                 <svg
@@ -340,18 +315,11 @@ export default function OrderDetail() {
                                         </div>
 
                                         <p
-                                            className={`
-                                                mt-2
-                                                text-xs sm:text-sm
-                                                font-medium
-                                                text-center
-                                                whitespace-nowrap
-                                                ${
-                                                    completed
-                                                        ? "text-gray-900 dark:text-white"
-                                                        : "text-gray-400 dark:text-gray-500"
-                                                }
-                                            `}
+                                            className={`mt-2 text-xs sm:text-sm font-medium text-center whitespace-nowrap ${
+                                                completed
+                                                    ? "text-gray-900 dark:text-white"
+                                                    : "text-gray-400 dark:text-gray-500"
+                                            }`}
                                         >
                                             {step.label}
                                         </p>
@@ -360,14 +328,11 @@ export default function OrderDetail() {
                                     {!isLast && (
                                         <div className="flex-1 px-2 sm:px-3 pt-5">
                                             <div
-                                                className={`
-                                                    h-0.5 w-full
-                                                    ${
-                                                        index < statusIndex
-                                                            ? "bg-blue-600"
-                                                            : "bg-gray-200 dark:bg-gray-700"
-                                                    }
-                                                `}
+                                                className={`h-0.5 w-full ${
+                                                    index < statusIndex
+                                                        ? "bg-blue-600"
+                                                        : "bg-gray-200 dark:bg-gray-700"
+                                                }`}
                                             />
                                         </div>
                                     )}
@@ -378,20 +343,8 @@ export default function OrderDetail() {
                 </section>
 
                 <div className="grid lg:grid-cols-3 gap-6">
-
                     {/* Order Items */}
-                    <section
-                        className="
-                            lg:col-span-2
-                            bg-white
-                            dark:bg-gray-800
-                            rounded-2xl
-                            border
-                            border-gray-100
-                            dark:border-gray-700
-                            overflow-hidden
-                        "
-                    >
+                    <section className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="px-5 md:px-6 py-5 border-b border-gray-200 dark:border-gray-700">
                             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                                 Items in your order
@@ -414,7 +367,9 @@ export default function OrderDetail() {
                                         {item.product?.image ? (
                                             <img
                                                 src={
-                                                    item.product.image?.startsWith("http")
+                                                    item.product.image?.startsWith(
+                                                        "http"
+                                                    )
                                                         ? item.product.image
                                                         : `http://localhost:8000${item.product.image}`
                                                 }
@@ -449,19 +404,8 @@ export default function OrderDetail() {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-
                         {/* Delivery Address */}
-                        <section
-                            className="
-                                bg-white
-                                dark:bg-gray-800
-                                rounded-2xl
-                                border
-                                border-gray-100
-                                dark:border-gray-700
-                                p-5 md:p-6
-                            "
-                        >
+                        <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 md:p-6">
                             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                                 Delivery Address
                             </h2>
@@ -474,17 +418,7 @@ export default function OrderDetail() {
                         </section>
 
                         {/* Order Summary */}
-                        <section
-                            className="
-                                bg-white
-                                dark:bg-gray-800
-                                rounded-2xl
-                                border
-                                border-gray-100
-                                dark:border-gray-700
-                                p-5 md:p-6
-                            "
-                        >
+                        <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-5 md:p-6">
                             <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                                 Order Summary
                             </h2>
@@ -511,7 +445,6 @@ export default function OrderDetail() {
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </div>
             </div>

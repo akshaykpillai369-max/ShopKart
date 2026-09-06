@@ -52,9 +52,11 @@ export default function ProductList() {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-50">
+
                 <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 animate-pulse">
                     Loading products...
                 </h2>
+
             </div>
         )
     }
@@ -84,67 +86,19 @@ export default function ProductList() {
 
                             <Link to={`/product/${product.slug}`}>
 
-                                <div
-                                    className="
-                                        relative
-                                        w-full
-                                        h-60
-                                        bg-white
-                                        rounded-2xl
-                                        p-4
-                                        flex items-center justify-center
-                                        overflow-hidden
-                                        border border-gray-200
-                                        dark:border-gray-800
-                                        shadow-sm
-                                        dark:shadow-none
-                                        transition-all
-                                        duration-300
-                                        group-hover:border-gray-300
-                                        dark:group-hover:border-gray-700
-                                        group-hover:shadow-md
-                                        group-hover:-translate-y-1
-                                    "
-                                >
+                                <div className="relative w-full h-60 bg-white rounded-2xl p-4 flex items-center justify-center overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm dark:shadow-none transition-all duration-300 group-hover:border-gray-300 dark:group-hover:border-gray-700 group-hover:shadow-md group-hover:-translate-y-1">
 
                                     {product.image && (
                                         <img
                                             src={product.image}
                                             alt={product.name}
-                                            className="
-                                                max-h-32
-                                                max-w-[85%]
-                                                w-auto
-                                                object-contain
-                                                transition-transform
-                                                duration-500
-                                                ease-out
-                                                group-hover:scale-110
-                                            "
+                                            className="max-h-32 max-w-[85%] w-auto object-contain transition-transform duration-500 ease-out group-hover:scale-110"
                                         />
                                     )}
 
                                     {product.rating_count > 0 && (
-                                        <div
-                                            className="
-                                                absolute
-                                                bottom-2
-                                                left-2
-                                                inline-flex
-                                                items-center
-                                                gap-1
-                                                bg-white/95
-                                                dark:bg-gray-800/95
-                                                backdrop-blur-sm
-                                                px-2
-                                                py-1
-                                                rounded-md
-                                                border
-                                                border-gray-200
-                                                dark:border-gray-700
-                                                shadow-sm
-                                            "
-                                        >
+                                        <div className="absolute bottom-2 left-2 inline-flex items-center gap-1 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm px-2 py-1 rounded-md border border-gray-200 dark:border-gray-700 shadow-sm">
+
                                             <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-100">
                                                 {product.rating_avg}
                                             </span>
@@ -152,24 +106,12 @@ export default function ProductList() {
                                             <span className="text-[10px] text-emerald-500">
                                                 ★
                                             </span>
+
                                         </div>
                                     )}
 
                                     {discount > 0 && (
-                                        <div
-                                            className="
-                                                absolute
-                                                top-2
-                                                left-2
-                                                px-2
-                                                py-1
-                                                rounded-md
-                                                bg-blue-600
-                                                text-white
-                                                text-[10px]
-                                                font-semibold
-                                            "
-                                        >
+                                        <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-blue-600 text-white text-[10px] font-semibold">
                                             {discount}% OFF
                                         </div>
                                     )}
@@ -180,16 +122,7 @@ export default function ProductList() {
                                 <div className="px-0.5 mt-2">
 
                                     <h3
-                                        className="
-                                            text-xs
-                                            font-medium
-                                            text-gray-800
-                                            dark:text-gray-200
-                                            truncate
-                                            group-hover:text-blue-600
-                                            dark:group-hover:text-blue-400
-                                            transition-colors
-                                        "
+                                        className="text-xs font-medium text-gray-800 dark:text-gray-200 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                                         title={product.name}
                                     >
                                         {product.name}

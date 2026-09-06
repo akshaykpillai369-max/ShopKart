@@ -171,14 +171,7 @@ export function ProductProvider({ children }) {
     return (
         <ProductContext
             value={{
-                products,
-                category,
-                loading,
-                nextPage,
-                previousPage,
-                handleSearch,
-                handleCategory,
-                handlePage
+                products,category,loading,nextPage,previousPage,handleSearch,handleCategory,handlePage
             }}
         >
             {children}

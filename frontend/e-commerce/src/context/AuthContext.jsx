@@ -23,7 +23,6 @@ export default function AuthProvider({ children }) {
         )
 
         setProfile(response.data)
-
         return response.data
     }
 
@@ -40,12 +39,10 @@ export default function AuthProvider({ children }) {
             const newAccess = response.data.access
 
             setAccess(newAccess)
-
             return newAccess
         } catch (error) {
             setAccess(null)
             setProfile(null)
-
             throw error
         }
     }
@@ -54,7 +51,6 @@ export default function AuthProvider({ children }) {
         const restoreSession = async () => {
             try {
                 const token = await refreshAccessToken()
-
                 await fetchProfile(token)
             } catch (error) {
                 setAccess(null)
@@ -82,7 +78,6 @@ export default function AuthProvider({ children }) {
         const token = response.data.access
 
         setAccess(token)
-
         await fetchProfile(token)
 
         return response
@@ -102,7 +97,6 @@ export default function AuthProvider({ children }) {
         const token = response.data.access
 
         setAccess(token)
-
         await fetchProfile(token)
 
         return response
@@ -132,7 +126,6 @@ export default function AuthProvider({ children }) {
             async () => {
                 try {
                     const newToken = await refreshAccessToken()
-
                     await fetchProfile(newToken)
                 } catch (error) {
                     console.error(
@@ -141,7 +134,7 @@ export default function AuthProvider({ children }) {
                     )
                 }
             },
-            4 * 60 *  1000
+            4 * 60 * 1000
         )
 
         return () => clearInterval(interval)

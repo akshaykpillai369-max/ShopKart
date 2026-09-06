@@ -10,6 +10,7 @@ export default function MyOrders() {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState("")
+    const now = new Date()
 
     useEffect(() => {
         if (authLoading) {
@@ -78,7 +79,6 @@ export default function MyOrders() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-8 sm:py-10">
                 <div className="max-w-4xl mx-auto">
-
                     <div className="mb-7 sm:mb-8">
                         <div className="h-8 w-36 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
 
@@ -89,15 +89,9 @@ export default function MyOrders() {
                         {[1, 2, 3].map((item) => (
                             <div
                                 key={item}
-                                className="
-                                    bg-white dark:bg-gray-900
-                                    border border-gray-200 dark:border-gray-800
-                                    rounded-2xl
-                                    p-5 sm:p-6
-                                "
+                                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 sm:p-6"
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-
                                     <div className="space-y-3">
                                         <div className="h-4 w-28 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
 
@@ -105,7 +99,6 @@ export default function MyOrders() {
                                     </div>
 
                                     <div className="h-7 w-24 bg-gray-200 dark:bg-gray-800 rounded-full animate-pulse" />
-
                                 </div>
 
                                 <div className="border-t border-gray-200 dark:border-gray-800 mt-5 pt-5 space-y-4">
@@ -116,7 +109,6 @@ export default function MyOrders() {
                             </div>
                         ))}
                     </div>
-
                 </div>
             </div>
         )
@@ -126,7 +118,6 @@ export default function MyOrders() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
                 <div className="text-center max-w-md">
-
                     <div className="w-12 h-12 mx-auto rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
                         <span className="text-red-500 dark:text-red-400 text-xl">
                             !
@@ -143,20 +134,10 @@ export default function MyOrders() {
 
                     <button
                         onClick={() => window.location.reload()}
-                        className="
-                            mt-5
-                            px-5 py-2.5
-                            rounded-lg
-                            bg-gray-900 hover:bg-gray-800
-                            dark:bg-white dark:hover:bg-gray-200
-                            text-white dark:text-gray-900
-                            text-sm font-medium
-                            transition-colors
-                        "
+                        className="mt-5 px-5 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-sm font-medium transition-colors"
                     >
                         Try Again
                     </button>
-
                 </div>
             </div>
         )
@@ -166,15 +147,7 @@ export default function MyOrders() {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
                 <div className="text-center max-w-md">
-
-                    <div className="
-                        w-16 h-16
-                        mx-auto
-                        rounded-2xl
-                        bg-gray-100 dark:bg-gray-900
-                        border border-gray-200 dark:border-gray-800
-                        flex items-center justify-center
-                    ">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center">
                         <svg
                             className="w-7 h-7 text-gray-400 dark:text-gray-500"
                             fill="none"
@@ -201,21 +174,10 @@ export default function MyOrders() {
 
                     <Link
                         to="/"
-                        className="
-                            inline-flex items-center justify-center
-                            mt-6
-                            px-5 py-2.5
-                            rounded-lg
-                            bg-gray-900 hover:bg-gray-800
-                            dark:bg-white dark:hover:bg-gray-200
-                            text-white dark:text-gray-900
-                            text-sm font-medium
-                            transition-colors
-                        "
+                        className="inline-flex items-center justify-center mt-6 px-5 py-2.5 rounded-lg bg-gray-900 hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-sm font-medium transition-colors"
                     >
                         Start Shopping
                     </Link>
-
                 </div>
             </div>
         )
@@ -224,10 +186,8 @@ export default function MyOrders() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 px-4 py-7 sm:py-8 md:py-12">
             <div className="max-w-4xl mx-auto">
-
                 {/* Header */}
                 <div className="mb-7 sm:mb-8">
-
                     <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
                         My Orders
                     </h1>
@@ -235,201 +195,109 @@ export default function MyOrders() {
                     <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                         View your previous orders and their current status.
                     </p>
-
                 </div>
-
 
                 {/* Orders */}
                 <div className="space-y-4 sm:space-y-5">
-
                     {orders.map((order) => (
-
                         <article
                             key={order.id}
-                            className="
-                                bg-white dark:bg-gray-900
-                                border border-gray-200 dark:border-gray-800
-                                rounded-2xl
-                                overflow-hidden
-                            "
+                            className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden"
                         >
-
                             {/* Order Header */}
-                            <div className="
-                                px-4 py-4
-                                sm:px-5 sm:py-5
-                                md:px-6
-                                border-b border-gray-200 dark:border-gray-800
-                            ">
-
-                                <div className="
-                                    flex flex-col
-                                    sm:flex-row
-                                    sm:items-center
-                                    sm:justify-between
-                                    gap-3
-                                    sm:gap-4
-                                ">
-
+                            <div className="px-4 py-4 sm:px-5 sm:py-5 md:px-6 border-b border-gray-200 dark:border-gray-800">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                                     <div className="min-w-0">
-
                                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
                                             Order #{order.id}
                                         </p>
 
                                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                            Placed on {formatDate(order.created_at)}
+                                            Placed on{" "}
+                                            {formatDate(order.created_at)}
                                         </p>
-
                                     </div>
 
                                     <span
-                                        className={`
-                                            inline-flex
-                                            w-fit
-                                            items-center
-                                            px-3 py-1.5
-                                            rounded-full
-                                            border
-                                            text-xs
-                                            font-medium
-                                            shrink-0
-                                            ${getStatusStyle(order.status)}
-                                        `}
+                                        className={`inline-flex w-fit items-center px-3 py-1.5 rounded-full border text-xs font-medium shrink-0 ${getStatusStyle(order.status)}`}
                                     >
                                         <span className="mr-1.5 w-1.5 h-1.5 rounded-full bg-current" />
                                         {order.status}
                                     </span>
-
                                 </div>
-
                             </div>
 
-
                             {/* Items */}
-                            <div className="
-                                px-4 py-4
-                                sm:px-5 sm:py-5
-                                md:px-6
-                            ">
-
+                            <div className="px-4 py-4 sm:px-5 sm:py-5 md:px-6">
                                 <div className="space-y-4">
-
                                     {order.items.map((item) => (
-
                                         <div
                                             key={item.id}
-                                            className="
-                                                flex
-                                                items-start
-                                                justify-between
-                                                gap-3 sm:gap-4
-                                                min-w-0
-                                            "
+                                            className="flex items-start justify-between gap-3 sm:gap-4 min-w-0"
                                         >
-
                                             {/* Item Info */}
                                             <div className="min-w-0 flex-1">
-
-                                                <p className="
-                                                    text-sm
-                                                    font-medium
-                                                    leading-5
-                                                    text-gray-900 dark:text-white
-                                                    break-words
-                                                ">
+                                                <p className="text-sm font-medium leading-5 text-gray-900 dark:text-white wrap-break-words">
                                                     {item.product.name}
                                                 </p>
 
-                                                <p className="
-                                                    mt-1
-                                                    text-xs
-                                                    text-gray-500 dark:text-gray-400
-                                                ">
-                                                    ₹{item.price} × {item.quantity}
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    ₹{item.price} ×{" "}
+                                                    {item.quantity}
                                                 </p>
-
                                             </div>
 
-
                                             {/* Item Total */}
-                                            <p className="
-                                                shrink-0
-                                                text-sm
-                                                font-medium
-                                                text-gray-900 dark:text-white
-                                                whitespace-nowrap
-                                            ">
+                                            <p className="shrink-0 text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                                 ₹
                                                 {(
                                                     item.price * item.quantity
                                                 ).toLocaleString("en-IN")}
                                             </p>
-
                                         </div>
-
                                     ))}
-
                                 </div>
-
                             </div>
 
-
                             {/* Footer */}
-                            <div className="
-                                px-4 py-4
-                                sm:px-5 sm:py-5
-                                md:px-6
-                                bg-gray-50/70 dark:bg-gray-950/40
-                                border-t border-gray-200 dark:border-gray-800
-                            ">
-
-                                <div className="
-                                    flex flex-col
-                                    sm:flex-row
-                                    sm:items-center
-                                    sm:justify-between
-                                    gap-4
-                                ">
-
+                            <div className="px-4 py-4 sm:px-5 sm:py-5 md:px-6 bg-gray-50/70 dark:bg-gray-950/40 border-t border-gray-200 dark:border-gray-800">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div>
-
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
                                             Order Total
                                         </p>
 
-                                        <p className="
-                                            mt-0.5
-                                            text-lg
-                                            font-semibold
-                                            text-gray-900 dark:text-white
-                                        ">
+                                        <p className="mt-0.5 text-lg font-semibold text-gray-900 dark:text-white">
                                             ₹
                                             {Number(
                                                 order.total_cost
                                             ).toLocaleString("en-IN")}
                                         </p>
 
+                                        {order.status !== "Delivered" ? (
+                                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                Expected delivery:{" "}
+                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                    {formatDate(
+                                                        order.expected_delivery
+                                                    )}
+                                                </span>
+                                            </p>
+                                        ) : (
+                                            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                Delivered on:{" "}
+                                                <span className="font-medium text-gray-700 dark:text-gray-300">
+                                                    {formatDate(
+                                                        order.expected_delivery
+                                                    )}
+                                                </span>
+                                            </p>
+                                        )}
                                     </div>
-
 
                                     <Link
                                         to={`/orders/${order.id}`}
-                                        className="
-                                            inline-flex
-                                            items-center
-                                            justify-center
-                                            gap-2
-                                            w-full sm:w-auto
-                                            px-4 py-2.5
-                                            rounded-lg
-                                            border border-gray-300 dark:border-gray-700
-                                            bg-white dark:bg-gray-900
-                                            hover:bg-gray-100 dark:hover:bg-gray-800
-                                            text-gray-800 dark:text-gray-200
-                                            text-sm font-medium
-                                            transition-colors
-                                        "
+                                        className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm font-medium transition-colors"
                                     >
                                         View Details
 
@@ -446,19 +314,12 @@ export default function MyOrders() {
                                                 d="M9 5l7 7-7 7"
                                             />
                                         </svg>
-
                                     </Link>
-
                                 </div>
-
                             </div>
-
                         </article>
-
                     ))}
-
                 </div>
-
             </div>
         </div>
     )
