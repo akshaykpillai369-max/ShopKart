@@ -22,6 +22,9 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from django.views.static import serve
+from django.urls import re_path
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,4 +32,4 @@ urlpatterns = [
     
 ]
 
-urlpatterns+= static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+urlpatterns += [re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT,}),]
