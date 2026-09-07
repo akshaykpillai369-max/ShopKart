@@ -294,7 +294,7 @@ export default function LoginForm() {
 
 
                             {/* INVISIBLE GOOGLE LOGIN */}
-                            <div className="absolute inset-0 opacity-0 overflow-hidden">
+                            <div className="relative w-full h-12 rounded-lg border border-gray-700 bg-gray-800 transition-all duration-200 hover:bg-gray-700 hover:border-gray-600 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-gray-950/40 active:translate-y-0 active:shadow-sm">
 
                                 <GoogleLogin
                                     width="100%"
@@ -305,7 +305,6 @@ export default function LoginForm() {
                                 />
 
                             </div>
-
                         </div>
 
 
