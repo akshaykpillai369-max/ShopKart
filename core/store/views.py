@@ -5,6 +5,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+import requests
+import os
 
 
 from rest_framework import status
@@ -184,30 +186,35 @@ class SignUpView(APIView):
                 f"{uid}/{token}"
             )
 
-            send_mail(
-                subject="Verify your ShopKart email",
+            response = requests.post(
+                f"https://api.agentmail.to/v0/inboxes/{os.getenv('AGENTMAIL_INBOX_ID')}/messages/send",
+                headers={
+                    "Authorization": f"Bearer {os.getenv('AGENTMAIL_API_KEY')}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "to": [user.email],
+                    "subject": "Verify your ShopKart email",
+                    "text": f"""
+            Hello,
 
-                message=f"""
-Hello,
+            Please verify your ShopKart email address by clicking the link below:
 
-Welcome to ShopKart!
+            {verification_link}
 
-Please verify your email address by clicking the link below:
-
-{verification_link}
-
-If you did not create this account, you can ignore this email.
-""",
-
-                from_email=None,
-                recipient_list=[user.email],
+            If you did not create this account, you can ignore this email.
+            """,
+                },
             )
+
+            response.raise_for_status()
 
             return Response(
                 {
                     "message": (
                         "Account created successfully. "
-                        "Please check your email to verify your account."
+                        "Please check your email to verify your account. "
+                        "If you didn't receive this email, please check your spam folder."
                     )
                 },
                 status=status.HTTP_201_CREATED,
@@ -805,27 +812,36 @@ class ForgotPasswordView(APIView):
             f"{uid}/{encoded_token}"
         )
 
-        send_mail(
-            subject="Reset your ShopKart password",
+        response = requests.post(
+            f"https://api.agentmail.to/v0/inboxes/{os.getenv('AGENTMAIL_INBOX_ID')}/messages/send",
+            headers={
+                "Authorization": f"Bearer {os.getenv('AGENTMAIL_API_KEY')}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "to": [user.email],
+                "subject": "Reset your ShopKart password",
+                "text": f"""
+        Hello,
 
-            message=f"""
-Hello,
+        You requested a password reset for your ShopKart account.
 
-You requested a password reset for your ShopKart account.
+        Use this link to reset your password:
 
-Use this link to reset your password:
+        {reset_link}
 
-{reset_link}
-
-If you did not request this, you can ignore this email.
-""",
-
-            from_email=None,
-            recipient_list=[user.email],
+        If you did not request this, you can ignore this email.
+        """,
+            },
         )
 
+        response.raise_for_status()
+
         return Response({
-            "message": "If an account exists with this email, a reset link has been sent."
+            "message": (
+            "If an account exists with this email, a reset link has been sent. "
+            "If you didn't see this email, please check your spam folder. "
+            )
         })
     
 class ResetPasswordView(APIView):
@@ -940,7 +956,9 @@ class ResendVerificationEmailView(APIView):
             return Response({
                 "message": (
                     "If an account exists with this email, "
-                    "a verification link has been sent."
+                    "a verification link has been sent. "
+                    "If you didn't receive this email, please check your spam folder. "
+
                 )
             })
 
@@ -960,25 +978,32 @@ class ResendVerificationEmailView(APIView):
             f"{uid}/{token}"
         )
 
-        send_mail(
-            subject="Verify your ShopKart email",
+        response = requests.post(
+            f"https://api.agentmail.to/v0/inboxes/{os.getenv('AGENTMAIL_INBOX_ID')}/messages/send",
+            headers={
+                "Authorization": f"Bearer {os.getenv('AGENTMAIL_API_KEY')}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "to": [user.email],
+                "subject": "Verify your ShopKart email",
+                "text": f"""
+    Hello,
 
-            message=f"""
-Hello,
+    Please verify your ShopKart email address by clicking the link below:
 
-Please verify your ShopKart email address by clicking the link below:
+    {verification_link}
 
-{verification_link}
+    If you did not create this account, you can ignore this email.
+    """,
+        },
+    )
 
-If you did not create this account, you can ignore this email.
-""",
-
-            from_email=None,
-            recipient_list=[user.email],
-        )
+        response.raise_for_status()
 
         return Response({
-            "message": "If an account exists with this email, a verification link has been sent."
+            "message": ("If an account exists with this email, a verification link has been sent. " 
+                        "If you didn't receive this email, please check your spam folder. ")
         })
 
 class CreatePaymentOrderView(APIView):
