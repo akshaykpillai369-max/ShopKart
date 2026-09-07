@@ -32,9 +32,8 @@ export default function LoginForm() {
 
     const handleSubmit = (e) => {
 
-        setLoading(true)
-
         e.preventDefault()
+        setLoading(true)
 
         setError("")
         setNeedsVerification(false)
@@ -45,9 +44,7 @@ export default function LoginForm() {
             })
             .catch((error) => {
                 console.log("Login failed", error)
-            .finally(() => {
-                setLoading(false)
-            })
+            
 
                 if (
                     error.response?.status === 403 &&
@@ -70,6 +67,10 @@ export default function LoginForm() {
                 }
 
                 setError("Invalid email or password.")
+            })
+
+            .finally(() => {
+                setLoading(false)
             })
     }
 
