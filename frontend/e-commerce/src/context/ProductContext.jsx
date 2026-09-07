@@ -24,6 +24,7 @@ export function ProductProvider({ children }) {
 
 
     useEffect(() => {
+        setLoading(true)
 
         axios
             .get(`${import.meta.env.VITE_API_URL}/api/categories/`)
@@ -36,6 +37,10 @@ export function ProductProvider({ children }) {
                     err
                 )
             )
+            .finally(() => {
+
+                setLoading(false)
+            })
 
     }, [])
 
@@ -43,6 +48,7 @@ export function ProductProvider({ children }) {
     const handleSearch = useCallback(
         (searchterm, categoryName = "") => {
 
+            setLoading(true)
             const safeSearchTerm =
                 encodeURIComponent(searchterm)
 
@@ -85,6 +91,10 @@ export function ProductProvider({ children }) {
                     )
 
                 })
+                .finally(() => {
+
+                    setLoading(false)
+                })
 
         },
         []
@@ -93,6 +103,8 @@ export function ProductProvider({ children }) {
 
     const handleCategory = useCallback(
         (categoryName) => {
+
+            setLoading(true)
 
             const safeCategory =
                 encodeURIComponent(categoryName)
@@ -125,6 +137,10 @@ export function ProductProvider({ children }) {
                     )
 
                 })
+                .finally(()=> {
+
+                    setLoading(false)
+                })
 
         },
         []
@@ -133,35 +149,28 @@ export function ProductProvider({ children }) {
 
     const handlePage = useCallback(
         async (url) => {
-
             if (!url) return
-
+            setLoading(true)
             try {
-
                 const response =
                     await axios.get(url)
-
                 setProducts(
                     response.data.results
                 )
-
                 setNextPage(
                     response.data.next
                 )
-
                 setPreviousPage(
                     response.data.previous
                 )
-
             } catch (err) {
-
                 console.error(
                     "Error fetching page:",
                     err
                 )
-
+            } finally {
+                setLoading(false)
             }
-
         },
         []
     )
