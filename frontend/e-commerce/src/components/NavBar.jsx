@@ -38,7 +38,7 @@ export default function Navbar() {
 
 
                     {/* Search */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 w-full">
                         <SearchBar onSearch={handleSearch} />
                     </div>
 

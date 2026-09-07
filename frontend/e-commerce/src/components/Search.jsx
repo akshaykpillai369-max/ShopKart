@@ -41,7 +41,7 @@ export default function SearchBar() {
             placeholder="Search products..."
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
-            className="sm:w-100 lg:w-120 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
     )
 }
