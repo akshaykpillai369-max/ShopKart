@@ -8,7 +8,7 @@ export default function Account() {
     const [mobileNumber, setMobileNumber] = useState("")
     const [address, setAddress] = useState("")
     const [isSaved, setIsSaved] = useState()
-    const [loading, setLoading] = useState()
+    const [loading, setLoading] = useState(false)
 
     const { access } = useLogin()
 
@@ -39,13 +39,12 @@ export default function Account() {
     }, [access])
 
     const handleSubmit = () => {
-        setLoading(true)
         const data = {
             name: name,
             mobile_number: mobileNumber,
             address: address,
         }
-
+        setLoading(true)
         setIsSaved()
 
         axios
@@ -193,10 +192,10 @@ export default function Account() {
                         {/* Save Button */}
                         <div className="pt-1">
                             <button
-                                disabled = {loading}
+                                disabled = {loading }
                                 onClick={handleSubmit}
                                 type="button"
-                                className="w-full sm:w-auto min-w-32 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm transition-colors shadow-sm"
+                                className="w-full sm:w-auto min-w-32 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:translate-y-0"
                             >
                                 { loading ? 'Saving Changes ...' : 'Save Changes'}
                             </button>
