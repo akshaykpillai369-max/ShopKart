@@ -32,7 +32,7 @@ ShopKart is a full-stack e-commerce application built with React and Django REST
 - Simple JWT
 
 **Database**
-- SQLite
+- PostgreSQL
 
 **Other**
 - Razorpay
