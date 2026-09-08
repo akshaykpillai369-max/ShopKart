@@ -63,7 +63,7 @@ Make sure you have:
 ### Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/akshaykpillai369-max/ShopKart
 cd ShopKart
 ```
 
@@ -124,7 +124,25 @@ The backend requires credentials for:
 
 Keep your `.env` file private and never commit it to Git.
 
+
+## Screenshots
+
+### Homepage
+![ShopKart Homepage](screenshots/homepage.png)
+
+### Product Listing
+![Product Listing](screenshots/products.png)
+
+### Product Detail
+![Product Detail](screenshots/product-detail.png)
+
+### Checkout
+![Checkout](screenshots/checkout.png)
+
+### Orders & Tracking
+![Orders](screenshots/order-detail.png)
+
 ## Live Demo
 
-Coming soon.
+https://shopkart-frontend-eyjd.onrender.com
 

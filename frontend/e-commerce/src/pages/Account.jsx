@@ -7,7 +7,7 @@ export default function Account() {
     const [name, setName] = useState("")
     const [mobileNumber, setMobileNumber] = useState("")
     const [address, setAddress] = useState("")
-    const [isSaved, setIsSaved] = useState()
+    const [isSaved, setIsSaved] = useState(null)
     const [loading, setLoading] = useState(false)
 
     const { access } = useLogin()
@@ -45,7 +45,7 @@ export default function Account() {
             address: address,
         }
         setLoading(true)
-        setIsSaved()
+        setIsSaved(null)
 
         axios
             .put(`${import.meta.env.VITE_API_URL}/api/profile/`, data, {
