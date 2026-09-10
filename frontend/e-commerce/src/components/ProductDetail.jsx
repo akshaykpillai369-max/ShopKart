@@ -71,7 +71,7 @@ export default function ProductDetail() {
             navigate("/login")
             return
         }
-
+        setLoading(true)
         addToCart(product)
     }
 
@@ -279,8 +279,10 @@ export default function ProductDetail() {
                                     </Link>
                                 ) : (
                                     <button
+                                        disabled = {loading}
                                         onClick={handleAddToCart}
-                                        className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-3 px-6 rounded-lg transition-colors shadow-sm"
+                                    
+                                        className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-3 px-6 rounded-lg transition-colors shadow-sm disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:translate-y-0"
                                     >
                                         Add to Cart
                                     </button>
