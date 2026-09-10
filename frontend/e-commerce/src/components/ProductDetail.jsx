@@ -67,14 +67,19 @@ export default function ProductDetail() {
         fetchReviews()
     }, [product])
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!access) {
             navigate("/login")
             return
         }
-        addingToCart(true)
-        addToCart(product)
-        addingToCart(false)
+
+        try {
+            setAddingToCart(true)
+            await addToCart(product)
+            navigate("/cart")
+        } finally {
+            setAddingToCart(false)
+        }
     }
 
     const handleBuyNow = () => {
