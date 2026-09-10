@@ -18,6 +18,7 @@ export default function ProductDetail() {
     const [rating, setRating] = useState(0)
     const [description, setDescription] = useState("")
     const [error, setError] = useState("")
+    const [addingToCart, setAddingToCart] = useState(false)
 
     const inCart = product
         ? cart.some((item) => item.id === product.id)
@@ -71,8 +72,9 @@ export default function ProductDetail() {
             navigate("/login")
             return
         }
-        setLoading(true)
+        addingToCart(true)
         addToCart(product)
+        addingToCart(false)
     }
 
     const handleBuyNow = () => {
@@ -279,7 +281,7 @@ export default function ProductDetail() {
                                     </Link>
                                 ) : (
                                     <button
-                                        disabled = {loading}
+                                        disabled = {addingToCart}
                                         onClick={handleAddToCart}
                                     
                                         className="flex-1 bg-yellow-400 hover:bg-yellow-500 text-black font-medium py-3 px-6 rounded-lg transition-colors shadow-sm disabled:bg-gray-600 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed disabled:translate-y-0"
