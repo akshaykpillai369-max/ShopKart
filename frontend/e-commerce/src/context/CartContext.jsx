@@ -59,7 +59,7 @@ export default function CartProvider({ children }) {
     const addToCart = async (product) => {
         try {
             const response = await fetch(
-                "http://localhost:8000/api/add-to-cart/",
+                `${import.meta.env.VITE_API_URL}/api/add-to-cart/`,
                 {
                     method: "POST",
                     headers: {
@@ -128,7 +128,7 @@ export default function CartProvider({ children }) {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                `${import.meta.env.VITE_API_URL}/api/cart-item/${item.cartItemId}/`,
                 {
                     method: "PATCH",
                     headers: {
@@ -179,7 +179,7 @@ export default function CartProvider({ children }) {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                `${import.meta.env.VITE_API_URL}/api/cart-item/${item.cartItemId}/`,
                 {
                     method: "PATCH",
                     headers: {
@@ -225,7 +225,7 @@ export default function CartProvider({ children }) {
 
         try {
             const response = await fetch(
-                `http://localhost:8000/api/cart-item/${item.cartItemId}/`,
+                `${import.meta.env.VITE_API_URL}/api/cart-item/${item.cartItemId}/`,
                 {
                     method: "DELETE",
                     headers: {
