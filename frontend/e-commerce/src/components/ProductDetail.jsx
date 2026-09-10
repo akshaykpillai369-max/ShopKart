@@ -76,7 +76,6 @@ export default function ProductDetail() {
         try {
             setAddingToCart(true)
             await addToCart(product)
-            navigate("/cart")
         } finally {
             setAddingToCart(false)
         }
