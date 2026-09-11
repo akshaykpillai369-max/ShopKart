@@ -808,7 +808,7 @@ class ForgotPasswordView(APIView):
         ).decode()
 
         reset_link = (
-             f"{os.getenv('FRONTEND_URL')}reset-password/"
+             f"{os.getenv('FRONTEND_URL')}/reset-password/"
             f"{uid}/{encoded_token}"
         )
 
@@ -974,7 +974,7 @@ class ResendVerificationEmailView(APIView):
         token = default_token_generator.make_token(user)
 
         verification_link = (
-             f"{os.getenv('FRONTEND_URL')}verify-email/"
+             f"{os.getenv('FRONTEND_URL')}/verify-email/"
             f"{uid}/{token}"
         )
 
