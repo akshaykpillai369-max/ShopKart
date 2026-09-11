@@ -276,7 +276,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 max_age=7 * 24 * 60 * 60,
                 secure=not settings.DEBUG,
                 httponly=True,
-                samesite="Lax",
+                samesite="None",
                 path="/",
             )
 
@@ -398,7 +398,7 @@ class GoogleLoginView(APIView):
             max_age=7 * 24 * 60 * 60,
             secure=not settings.DEBUG,
             httponly=True,
-            samesite="Lax",
+            samesite="None",
             path="/",
         )
             return response
