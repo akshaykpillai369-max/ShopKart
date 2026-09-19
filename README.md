@@ -144,5 +144,5 @@ Keep your `.env` file private and never commit it to Git.
 
 ## Live Demo
 
-https://shopkart-frontend-eyjd.onrender.com
+[https://shopkart-frontend-eyjd.onrender.com](https://shopkart-lake.vercel.app/)
 
