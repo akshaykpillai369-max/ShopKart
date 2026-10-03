@@ -1,148 +1,143 @@
 # ShopKart
 
-ShopKart is a full-stack e-commerce application built with React and Django REST Framework. It includes product browsing, search, cart management, authentication, payments, and order tracking.
+A full-stack e-commerce web app built with Django REST Framework and React. Handles end-to-end shopping workflows including catalog filtering, cart/checkout flows, Razorpay integration, Google OAuth, and basic order tracking.
 
-## Features
+**Live Demo:** [https://shopkart-lake.vercel.app/](https://shopkart-lake.vercel.app/)
 
-- Browse products by category
-- Search and price-based filtering
-- Product details and reviews
-- Cart and Buy Now
-- User registration and email verification
-- JWT authentication with Google login
-- Razorpay payments
-- Order tracking with delivery status
-- Expected delivery dates
-- Product pagination
-- API caching
-- Dark mode
-- Responsive UI
+---
+
+## Overview
+
+- **Authentication:** JWT-based auth via SimpleJWT and Google OAuth 2.0.
+- **Verification:** Email verification flow on account registration.
+- **Payments:** Razorpay payment integration(test mode).
+- **Orders:** Order tracking with estimated delivery timelines.
+
+---
 
 ## Tech Stack
 
-**Frontend**
-- React
-- React Router
-- Tailwind CSS
-- Axios
+- **Frontend:** React (Vite), React Router, Tailwind CSS
+- **Backend:** Django, Django REST Framework
+- **Database:** PostgreSQL
 
-**Backend**
-- Django
-- Django REST Framework
-- Simple JWT
-
-**Database**
-- PostgreSQL
-
-**Other**
-- Razorpay
-- Google OAuth
+---
 
 ## Project Structure
 
 ```text
 ShopKart/
-├── core/                  # Django backend
+├── core/                  # Django project root & apps
+│   ├── manage.py
+│   └── requirements.txt
 ├── frontend/
-│   └── e-commerce/       # React frontend
-└── .gitignore
+│   └── e-commerce/        # React app
+└── README.md
 ```
 
-## Getting Started
+---
+
+## Local Development
 
 ### Prerequisites
 
-Make sure you have:
+- Python 3.10+
+- Node.js 18+ and npm
+- PostgreSQL (or SQLite)
 
-- Python
-- pip
-- Node.js
-- npm
-- Git
+---
 
-### Clone the Repository
+### Backend Setup
 
-```bash
-git clone https://github.com/akshaykpillai369-max/ShopKart
-cd ShopKart
-```
+1. **Clone the repository:**
 
-### Backend
+   ```bash
+   git clone https://github.com/akshaykpillai369-max/ShopKart.git
+   cd ShopKart/core
+   ```
 
-```bash
-cd core
-pip install -r requirements.txt
-```
+2. **Create and activate a virtual environment:**
 
-Create a `.env` file inside `core/`:
+   ```bash
+   # macOS / Linux
+   python3 -m venv venv
+   source venv/bin/activate
 
-```env
-DJANGO_SECRET_KEY=your_django_secret_key(usually available in settings.py )
-GOOGLE_CLIENT_ID=your_google_client_id
-EMAIL_HOST_USER=your_email
-EMAIL_HOST_PASSWORD=your_email_app_password
-RAZORPAY_KEY_ID=your_razorpay_key_id
-RAZORPAY_KEY_SECRET=your_razorpay_key_secret
-```
+   # Windows
+   python -m venv venv
+   venv\Scripts\activate
+   ```
 
-Run migrations:
+3. **Install dependencies:**
 
-```bash
-python manage.py migrate
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-Start the backend:
+4. **Configure environment variables:**
 
-```bash
-python manage.py runserver
-```
+   Create a `.env` file inside `core/`:
 
-### Frontend
+   ```ini
+   DJANGO_SECRET_KEY=your_secret_key_here
+   DEBUG=True
+   DATABASE_URL=postgres://user:password@localhost:5432/shopkart_db
 
-Open a new terminal:
+   # Auth & Email
+   GOOGLE_CLIENT_ID=your_google_client_id
+   EMAIL_HOST_USER=your_email@gmail.com
+   EMAIL_HOST_PASSWORD=your_app_specific_password
 
-```bash
-cd frontend/e-commerce
-npm install
-npm run dev
-```
+   # Payments
+   RAZORPAY_KEY_ID=your_rzp_test_key
+   RAZORPAY_KEY_SECRET=your_rzp_test_secret
+   ```
 
-The application will be available at:
+5. **Run migrations and start the server:**
 
-```text
-http://localhost:5173/
-```
+   ```bash
+   python manage.py migrate
+   python manage.py runserver
+   ```
 
-## Environment Variables
+   The backend API will be available at `http://127.0.0.1:8000/`.
 
-The backend requires credentials for:
+---
 
-- Django
-- Google OAuth
-- Email verification
-- Razorpay
+### Frontend Setup
 
-Keep your `.env` file private and never commit it to Git.
+1. Open a separate terminal:
 
+   ```bash
+   cd ShopKart/frontend/e-commerce
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Start the dev server:
+
+   ```bash
+   npm run dev
+   ```
+
+   The frontend will run at `http://localhost:5173/`.
+
+---
 
 ## Screenshots
 
-### Homepage
-![ShopKart Homepage](screenshots/homepage.png)
+| Home | Product Details |
+| :---: | :---: |
+| ![Homepage](screenshots/homepage.png) | ![Product Detail](screenshots/product-detail.png) |
 
-### Product Listing
-![Product Listing](screenshots/products.png)
+| Checkout | Order Tracking |
+| :---: | :---: |
+| ![Checkout](screenshots/checkout.png) | ![Order Detail](screenshots/order-detail.png) |
 
-### Product Detail
-![Product Detail](screenshots/product-detail.png)
+---
 
-### Checkout
-![Checkout](screenshots/checkout.png)
-
-### Orders & Tracking
-![Orders](screenshots/order-detail.png)
-
-## Live Demo
-
-[https://shopkart-frontend-eyjd.onrender.com](https://shopkart-lake.vercel.app/)
 
